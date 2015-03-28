@@ -1,0 +1,86 @@
+{
+    "appKeys": {
+        "action": 0,
+        "bearing": 6,
+        "bus_destination_0": 110,
+        "bus_destination_1": 111,
+        "bus_destination_2": 112,
+        "bus_destination_3": 113,
+        "bus_destination_4": 114,
+        "bus_destination_5": 115,
+        "bus_destination_6": 116,
+        "bus_destination_7": 117,
+        "bus_destination_8": 118,
+        "bus_destination_9": 119,
+        "bus_duein_0": 120,
+        "bus_duein_1": 121,
+        "bus_duein_2": 122,
+        "bus_duein_3": 123,
+        "bus_duein_4": 124,
+        "bus_duein_5": 125,
+        "bus_duein_6": 126,
+        "bus_duein_7": 127,
+        "bus_duein_8": 128,
+        "bus_duein_9": 129,
+        "bus_route_0": 100,
+        "bus_route_1": 101,
+        "bus_route_2": 102,
+        "bus_route_3": 103,
+        "bus_route_4": 104,
+        "bus_route_5": 105,
+        "bus_route_6": 106,
+        "bus_route_7": 107,
+        "bus_route_8": 108,
+        "bus_route_9": 109,
+        "data": 2,
+        "distance": 5,
+        "due": 7,
+        "id": 4,
+        "index": 8,
+        "name": 3,
+        "status": 1
+    },
+    "capabilities": [
+        "location"
+    ],
+    "companyName": "pebble@smallroomstudios.net",
+    "longName": "Dublin Bus 2 Go",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/favourites.png",
+                "name": "FAVOURITES_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/dublin-bus-logo-only-bw.png",
+                "menuIcon": true,
+                "name": "DUBLIN_BUS_LOGO_SMALL",
+                "type": "png"
+            },
+            {
+                "file": "images/nearest.png",
+                "name": "NEAREST_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/dublin-bus-logo-wnb.png",
+                "name": "DUBLIN_BUS_LOGO",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Dublin Bus",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "5094f98c-7087-42de-aa2e-081c6f11c346",
+    "versionCode": 1,
+    "versionLabel": "0.1",
+    "watchapp": {
+        "watchface": false
+    }
+}
