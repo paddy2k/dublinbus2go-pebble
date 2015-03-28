@@ -130,7 +130,7 @@ Pebble.addEventListener('ready',
  function(e) {
     // Request current position
     console.log('Pebble Ready');
-    navigator.geolocation.getCurrentPosition(db2goLocation.success, db2goLocation.error, db2goLocation.options);  
+    navigator.geolocation.watchPosition(db2goLocation.success, db2goLocation.error, db2goLocation.options);  
  }
 );
 
