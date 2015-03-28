@@ -1,9 +1,9 @@
 #include <pebble.h>
 #include "Stop.h"
 #include "app_message.h"
-#include "teststoplist.h"
+#include "stoplist.h"
 #include "loading.h"
-#include "test.h"
+#include "stop.h"
 
 // Key values for AppMessage Dictionary
 enum {
@@ -48,12 +48,6 @@ void send_message(void){
 static void in_received_handler(DictionaryIterator *received, void *context) {
 	Tuple *action;
   Tuple *status;
-  Tuple *name;
-  Tuple *index;
-  Tuple *id;
-  Tuple *distance;
-  Tuple *bearing;
-//   Tuple *data;
   
 	action = dict_find(received, ACTION_KEY);
   status = dict_find(received, STATUS_KEY);
@@ -71,21 +65,6 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
           
           case STATUS_INPROGRESS:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: IN-PROGRESS"); 
-          
-            index = dict_find(received, INDEX_KEY); 
-            name = dict_find(received, NAME_KEY);
-            distance = dict_find(received, DISTANCE_KEY);
-            id = dict_find(received, ID_KEY);
-            bearing = dict_find(received, BEARING_KEY);
-            
-//             stoplist_add_stop(
-//               (int)index->value->uint32, 
-//               name->value->cstring, 
-//               (int)id->value->uint32,
-//               distance->value->cstring,
-//               bearing->value->cstring
-//             );
-
             break;
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
@@ -110,7 +89,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                    stop_bearing->value->cstring
                  );
               }  
-            
+            }
           
             show_stoplist();
             remove_loading_window();
@@ -149,7 +128,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
               }  
             }
           
-            show_test(stop_name->value->cstring);
+            show_stop(stop_name->value->cstring);
             hide_loading();
             break;
         }

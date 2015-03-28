@@ -1,7 +1,6 @@
 #include "home.h"
 #include "loading.h"
-//#include "stoplist.h"
-#include "teststoplist.h"
+#include "stoplist.h"
 #include "app_message.h"
 #include <pebble.h>
 
