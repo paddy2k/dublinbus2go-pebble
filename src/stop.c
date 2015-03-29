@@ -1,7 +1,5 @@
 #include <pebble.h>
 #include "stop.h"
-#include "saved.h"
-#include "removed.h"
 #include "Bus.h"
 #include "BusLayer.h"
 #include "app_message.h"
@@ -21,31 +19,12 @@ int stoplist_type = 0;
 
 static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
 
-static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  switch(stoplist_type){
-    case 0:
-      saveStop(stop_id);
-      show_saved();
-      break;
-    case 1:
-      removeStop(stop_id);
-      show_removed();
-      break;
-  }
-}
-
-static void click_config_provider(void *context) {
-  // Register the ClickHandlers
-  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
-}
-
 static void initialise_ui(const char *name) {
   s_window = window_create();
   window_set_background_color(s_window, GColorBlack);
   window_set_fullscreen(s_window, false);
   GRect bounds = GRect(0, 24, 144, 148);
   
-  scroll_layer_destroy(s_scroll_layer);
   s_scroll_layer = scroll_layer_create(bounds);
   scroll_layer_set_click_config_onto_window(s_scroll_layer, s_window);
   
@@ -87,7 +66,6 @@ static void initialise_ui(const char *name) {
   
   scroll_layer_set_content_size(s_scroll_layer, GSize(bounds.size.w, (24*rows)));
   layer_add_child(window_get_root_layer(s_window), scroll_layer_get_layer(s_scroll_layer));
-  window_set_click_config_provider(s_window, click_config_provider);
 }
 
 static void destroy_ui(void) {

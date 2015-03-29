@@ -3,6 +3,8 @@
 #include "stop.h"
 #include "loading.h"
 #include "app_message.h"
+#include "saved.h"
+#include "removed.h"
 #include <pebble.h>
 
 #define NUM_MENU_SECTIONS 1
@@ -15,6 +17,22 @@ int stop_list_type = 0;
 int stop_list[NUM_STOPS_IN_LIST];
 
 static Stop *stops[NUM_STOPS_IN_LIST] = {};
+
+void tap_handler(AccelAxisType axis, int32_t direction)
+{
+  // Build a short message one character at a time to cover all possible taps.
+  switch (stop_list_type) {
+    // This is the menu item with the cycling icon
+    case 0:
+       //show_loading();
+       //getSavedStops();
+      break;
+    case 1:
+       //show_loading();
+       //getNearestStops();
+      break;
+  }
+}
 
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
   return NUM_MENU_SECTIONS;
@@ -95,6 +113,22 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   show_loading();  
 }
 
+static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+  Stop *stop = stops[cell_index->row];
+
+  switch(stoplist_type){
+    case 0:
+      removeStop(stop->id);
+      show_removed();
+      break;
+    case 1:
+      saveStop(stop->id);
+      show_saved();
+      break;
+  }
+}
+
+
 static void initialise_ui(void) {
   GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
   
@@ -111,10 +145,13 @@ static void initialise_ui(void) {
     .draw_header = menu_draw_header_callback,
     .draw_row = menu_draw_row_callback,
     .select_click = menu_select_callback,
+    .select_long_click = menu_select_long_callback,
   });
   
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
+  
+  accel_tap_service_subscribe(tap_handler);
   
   stoplist_type = stop_list_type;
 }
