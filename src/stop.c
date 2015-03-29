@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "stop.h"
 #include "saved.h"
+#include "removed.h"
 #include "Bus.h"
 #include "BusLayer.h"
 #include "app_message.h"
@@ -16,12 +17,21 @@ static TextLayer *s_headerlayer_1;
 static TextLayer *s_headerlayer_2;
 static ScrollLayer *s_scroll_layer;
 char stop_id[6];
+int stoplist_type = 0;
 
 static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  saveStop(stop_id);
-  show_saved();
+  switch(stoplist_type){
+    case 0:
+      saveStop(stop_id);
+      show_saved();
+      break;
+    case 1:
+      removeStop(stop_id);
+      show_removed();
+      break;
+  }
 }
 
 static void click_config_provider(void *context) {

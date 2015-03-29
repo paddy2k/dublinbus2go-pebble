@@ -23,11 +23,13 @@ var appMessageQueue = {
 				appMessageQueue.queue.shift();
 				appMessageQueue.working = false;
 				appMessageQueue.send();
+        console.log('AppMessage SENT: ' + JSON.stringify(this.nextMessage()));
 			};
 			var nack = function() {
 				appMessageQueue.numTries++;
 				appMessageQueue.working = false;
 				appMessageQueue.send();
+        console.log('AppMessage NACK: ' + JSON.stringify(this.nextMessage()));
 			};
 			if (this.numTries >= this.maxTries) {
 				console.log('Failed sending AppMessage: ' + JSON.stringify(this.nextMessage()));

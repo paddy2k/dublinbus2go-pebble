@@ -4,3 +4,4 @@ void getSavedStops(void);
 void getNearestStops(void);
 void getStop(char *id, char *name);
 void saveStop(char *id);
+void removeStop(char *id);

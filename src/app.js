@@ -88,47 +88,49 @@ var db2go = db2go || {
     });
   },
   listStops: function(stops){
-//     window['stops'] = stops;
+    if(!db2goLocation.coords){
+      db2goLocation.storedCallback = arguments.callee;
+      db2goLocation.storedArguements = arguments;
+      
+      return false;
+    }
+    
     var here = new LatLon(db2goLocation.coords.latitude, db2goLocation.coords.longitude);
     console.log(stops.length + " stop nearby");
     var message = {
       "action": actions.getStops,
       "status" : sendStatus.end
     };
-console.log('A1');
+
     var serialisedStops = '';
     var maxResults = 15;
-console.log('A2');
-console.log(JSON.stringify(stops.length));
+
+    if(!stops.length){
+      message['status'] = sendStatus.error;
+      appMessageQueue.send(message);
+
+      return false;
+    }
+
     stops.forEach(function(stop, index){
-      console.log(JSON.stringify(stop));
       var StopLocation = new LatLon(stop.lat, stop.lng);
       var rawDistance = here.distanceTo(StopLocation);
       var rawBearing = here.bearingTo(StopLocation);
-console.log('B2');
       var distance = Utils.prettyDistance(rawDistance);
       var bearing = Utils.prettyBearing(rawBearing);
-console.log('B3');
+
       stops[index].rawDistance = rawDistance;
       stops[index].distance = distance;
       stops[index].bearing = bearing;
       stops[index].name = stop.address.split(',')[0];
       stops[index].id = parseInt(stops[index].stopnumber)
-console.log('B4');
-      var serialisedStop = '';
-      serialisedStop += stops[index].name + '~';
-      serialisedStop += stops[index].id + '~';
-      serialisedStop += stops[index].distance + '~';
-      serialisedStop += stops[index].bearing + '~';
-console.log('B5');
-      serialisedStops += serialisedStop + '^';
     });
-console.log('A3');
+
     stops.sort( function(a, b){ // Sorting
       return a.rawDistance - b.rawDistance;
     });
     stops.splice(maxResults);
-console.log('A3');
+
     stops.forEach(function(stop, index){
       message["stop_name_"+index]= stop.name;
       message["stop_id_"+index] = stop.id;
@@ -136,7 +138,7 @@ console.log('A3');
       message["stop_bearing_"+index] = stop.bearing;
       message["stop_index_"+index] = index;
     });
-console.log('A4');
+console.log(7);
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
   }
@@ -172,13 +174,14 @@ var actions = {
   getStop:  2,
   getStops:  3,
   saveStop:  4,
-  deleteStop:  5
+  removeStop:  5
 };
 
 var sendStatus = {
   start: 0,
   inProgress: 1,
-  end:  2
+  end:  2,
+  error: 3
 }
 
 Pebble.addEventListener('ready',
@@ -209,7 +212,7 @@ Pebble.addEventListener("appmessage",
         db2go.listStops(stops);
         
         break;
-      case actions.deleteStop:
+      case actions.removeStop:
         var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
         var tempIds = [];
         stopIds.forEach(function(stopId){
@@ -259,7 +262,14 @@ Pebble.addEventListener("appmessage",
               "name" : stopName,
               "id" : ""+stopId+""
             }
-          console.log("Get Stop: End");
+
+          if(!response){
+            appMessageQueue.send({
+              "action": actions.getStop,
+              "status" : sendStatus.error
+            });  
+            return false;
+          }
           
           var responseSize = response.childNodes.length;
           responseSize = responseSize < maxResponse ? responseSize : maxResponse;

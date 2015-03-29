@@ -5,7 +5,11 @@
 #include "loading.h"
 #include "stop.h"
 #include "saved.h"
+#include "removed.h"
+#include "no_buses.h"
+#include "no_stops.h"
 
+  
 // Key values for AppMessage Dictionary
 enum {
   ACTION_KEY = 0,	
@@ -22,7 +26,8 @@ enum {
 enum {
   STATUS_START = 0,	
   STATUS_INPROGRESS = 1,	
-	STATUS_END = 2
+	STATUS_END = 2,
+  STATUS_ERROR = 3
 };
 
 enum {
@@ -31,7 +36,7 @@ enum {
   ACTION_GETSTOP = 2,
   ACTION_GETSTOPS = 3,
   ACTION_SAVE_STOP = 4,
-  ACTION_DELETE_STOP = 5,
+  ACTION_REMOVE_STOP = 5,
 };
 
 // Called when a message is received from PebbleKitJS
@@ -46,6 +51,12 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: %d", (int)status->value->uint32);
     
     switch((int) action->value->uint32){
+      case ACTION_REMOVE_STOP:
+        if(STATUS_END == (int) status->value->uint32){
+          hide_removed();
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED"); 
+        }
+        break;
       case ACTION_SAVE_STOP:
         if(STATUS_END == (int) status->value->uint32){
           hide_saved();
@@ -55,6 +66,10 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
       case ACTION_GETSTOPS:
         APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOPS"); 
         switch((int) status->value->uint32){
+          case STATUS_ERROR:
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "STOPS ERROR");
+            show_no_stops();
+            hide_loading();
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
             
@@ -79,11 +94,8 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                  );
               }  
             }
-APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E1"); 
             show_stoplist();
-APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E2"); 
             remove_loading_window();
-APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E3"); 
             break;
         }
         break;
@@ -91,6 +103,11 @@ APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E3");
       case ACTION_GETSTOP:
         APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOP"); 
         switch((int) status->value->uint32){
+          case STATUS_ERROR:
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ERROR");
+            show_no_buses();
+            hide_loading();
+            break;
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
             Tuple *stop_name = dict_find(received, NAME_KEY);
@@ -214,6 +231,16 @@ void saveStop(char *id){
   DictionaryIterator *iter;
  	app_message_outbox_begin(&iter);
   dict_write_int16(iter, ACTION_KEY, ACTION_SAVE_STOP);
+  dict_write_cstring(iter, ID_KEY, id);
+  dict_write_end(iter);
+  app_message_outbox_send();
+}
+
+void removeStop(char *id){
+  // Request from API
+  DictionaryIterator *iter;
+ 	app_message_outbox_begin(&iter);
+  dict_write_int16(iter, ACTION_KEY, ACTION_REMOVE_STOP);
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();

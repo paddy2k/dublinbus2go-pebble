@@ -89,6 +89,16 @@
     "resources": {
         "media": [
             {
+                "file": "images/info_large.png",
+                "name": "INFO_LARGE",
+                "type": "png"
+            },
+            {
+                "file": "images/removed_large.png",
+                "name": "REMOVED_LARGE",
+                "type": "png"
+            },
+            {
                 "file": "images/saved_large.png",
                 "name": "SAVED_LARGE",
                 "type": "png"
@@ -119,8 +129,7 @@
     "sdkVersion": "3",
     "shortName": "Dublin Bus",
     "targetPlatforms": [
-        "aplite",
-        "basalt"
+        "aplite"
     ],
     "uuid": "5094f98c-7087-42de-aa2e-081c6f11c346",
     "versionCode": 1,

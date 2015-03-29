@@ -115,11 +115,11 @@ static void initialise_ui(void) {
   
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
+  
+  stoplist_type = stop_list_type;
 }
 
 static void destroy_ui(void) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY"); 
-  
   int stopsSize = sizeof stops / sizeof stops[0];
   for(int i = 0; i<stopsSize; i++){
     if(stops[i]){
@@ -137,9 +137,7 @@ static void handle_window_unload(Window* window) {
 }
 
 void show_stoplist(void) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: I1"); 
   initialise_ui();
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: I2"); 
   window_set_window_handlers(s_window, (WindowHandlers) {
     .unload = handle_window_unload,
   });
