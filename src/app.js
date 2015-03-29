@@ -86,6 +86,59 @@ var db2go = db2go || {
         callback.call(this, stops.points);
       }
     });
+  },
+  listStops: function(stops){
+//     window['stops'] = stops;
+    var here = new LatLon(db2goLocation.coords.latitude, db2goLocation.coords.longitude);
+    console.log(stops.length + " stop nearby");
+    var message = {
+      "action": actions.getStops,
+      "status" : sendStatus.end
+    };
+console.log('A1');
+    var serialisedStops = '';
+    var maxResults = 15;
+console.log('A2');
+console.log(JSON.stringify(stops.length));
+    stops.forEach(function(stop, index){
+      console.log(JSON.stringify(stop));
+      var StopLocation = new LatLon(stop.lat, stop.lng);
+      var rawDistance = here.distanceTo(StopLocation);
+      var rawBearing = here.bearingTo(StopLocation);
+console.log('B2');
+      var distance = Utils.prettyDistance(rawDistance);
+      var bearing = Utils.prettyBearing(rawBearing);
+console.log('B3');
+      stops[index].rawDistance = rawDistance;
+      stops[index].distance = distance;
+      stops[index].bearing = bearing;
+      stops[index].name = stop.address.split(',')[0];
+      stops[index].id = parseInt(stops[index].stopnumber)
+console.log('B4');
+      var serialisedStop = '';
+      serialisedStop += stops[index].name + '~';
+      serialisedStop += stops[index].id + '~';
+      serialisedStop += stops[index].distance + '~';
+      serialisedStop += stops[index].bearing + '~';
+console.log('B5');
+      serialisedStops += serialisedStop + '^';
+    });
+console.log('A3');
+    stops.sort( function(a, b){ // Sorting
+      return a.rawDistance - b.rawDistance;
+    });
+    stops.splice(maxResults);
+console.log('A3');
+    stops.forEach(function(stop, index){
+      message["stop_name_"+index]= stop.name;
+      message["stop_id_"+index] = stop.id;
+      message["stop_distance_"+index] = stop.distance;
+      message["stop_bearing_"+index] = stop.bearing;
+      message["stop_index_"+index] = index;
+    });
+console.log('A4');
+    appMessageQueue.send(message);
+    console.log("LIST STOPS: End");
   }
 };
 
@@ -117,7 +170,9 @@ var actions = {
   getSavedStops: 0,
   getNearestStops: 1,
   getStop:  2,
-  getStops:  3
+  getStops:  3,
+  saveStop:  4,
+  deleteStop:  5
 };
 
 var sendStatus = {
@@ -138,75 +193,55 @@ Pebble.addEventListener("appmessage",
   function(e) {
     var message = e.payload;
     console.log("Message: " + message.action);
+    console.log(JSON.stringify(message));
 
     switch(message.action){
+      case actions.getSavedStops:
+        var stops = [];
+        console.log("Get Saved Stops: Start");
+        
+        var stopIds = JSON.parse(localStorage.getItem("stops"));
+        stopIds.forEach(function(stopId){
+          var stop = JSON.parse(localStorage.getItem(stopId));
+          stops.push(stop);
+        });
+        
+        db2go.listStops(stops);
+        
+        break;
+      case actions.deleteStop:
+        var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
+        var tempIds = [];
+        stopIds.forEach(function(stopId){
+          if(message.id != stopId){
+            tempIds.push(stopId);    
+          }
+        });
+        localStorage.setItem("stops", JSON.stringify(tempIds));
+        break;
+      case actions.saveStop:
+        window['stops'].forEach(function(stop){
+          var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
+
+          if(message.id == stop.stopnumber){
+            stopIds.push(message.id);
+            localStorage.setItem("stops", JSON.stringify(stopIds));            
+            localStorage.setItem(message.id, JSON.stringify(stop));
+
+            appMessageQueue.send({
+              "action" : actions.saveStop,
+              "status" : sendStatus.end
+            });
+            console.log('SAVED'); 
+          }
+        });
+        break;
       case actions.getNearestStops:
         console.log("Get Nearest Stops: Start");
        
         db2go.getStops(function(stops){
-          var here = new LatLon(db2goLocation.coords.latitude, db2goLocation.coords.longitude);
-          console.log(stops.length + " stop nearby");
-          var message = {
-            "action": actions.getStops,
-            "status" : sendStatus.end
-          };
-//           appMessageQueue.send({
-//             "action": actions.getStops,
-//             "status" : sendStatus.start
-//           });
-          var serialisedStops = '';
-          var maxResults = 15;
-          
-          stops.forEach(function(stop, index){            
-            var StopLocation = new LatLon(stop.lat, stop.lng);
-            var rawDistance = here.distanceTo(StopLocation);
-            var rawBearing = here.bearingTo(StopLocation);
-
-            var distance = Utils.prettyDistance(rawDistance);
-            var bearing = Utils.prettyBearing(rawBearing);
-            
-            stops[index].rawDistance = rawDistance;
-            stops[index].distance = distance;
-            stops[index].bearing = bearing;
-            stops[index].name = stop.address.split(',')[0];
-            stops[index].id = parseInt(stops[index].stopnumber)
-
-            var serialisedStop = '';
-            serialisedStop += stops[index].name + '~';
-            serialisedStop += stops[index].id + '~';
-            serialisedStop += stops[index].distance + '~';
-            serialisedStop += stops[index].bearing + '~';
-
-            serialisedStops += serialisedStop + '^';
-          });
-          
-          stops.sort( function(a, b){ // Sorting
-            return a.rawDistance - b.rawDistance;
-          });
-          stops.splice(maxResults);
-          
-          stops.forEach(function(stop, index){
-            message["stop_name_"+index]= stop.name;
-            message["stop_id_"+index] = stop.id;
-            message["stop_distance_"+index] = stop.distance;
-            message["stop_bearing_"+index] = stop.bearing;
-            message["stop_index_"+index] = index;
-
-//             appMessageQueue.send({
-//                   "action": actions.getStops,
-//                   "status" : sendStatus.inProgress,
-//                   "name": stop.name,
-//                   "id": stop.id,
-//                   "distance": stop.distance,
-//                   "bearing": stop.bearing,
-//                   "index": index
-//                 });
-          });
-          
           window['stops'] = stops;
-                   
-          appMessageQueue.send(message);
-          console.log("Get Nearest Stops: End");
+          db2go.listStops(stops);
         });    
         break;
       case actions.getStop:
@@ -221,7 +256,8 @@ Pebble.addEventListener("appmessage",
           var message  = {
               "action": actions.getStop,
               "status" : sendStatus.end,
-              "name" : stopName
+              "name" : stopName,
+              "id" : ""+stopId+""
             }
           console.log("Get Stop: End");
           

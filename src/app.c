@@ -2,8 +2,6 @@
 #include "home.h"
 #include "app_message.h"
 
-
-
 int main(void) {
   message_init();
   show_home();

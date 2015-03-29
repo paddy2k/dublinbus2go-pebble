@@ -21,7 +21,6 @@ enum {
   GET_STOP_ACTION = 2
 };
 
-
 void tick_handler(struct tm *tick_time, TimeUnits units_changed)
 {
   switch(tick_time->tm_sec % 3){
@@ -88,6 +87,7 @@ static void handle_window_unload(Window* window) {
 
 void remove_loading_window(void){
   window_stack_remove(s_window, false);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "REMOVED LOADING"); 
 }
 
 void show_loading(void) {

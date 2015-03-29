@@ -5,13 +5,12 @@
 #include <pebble.h>
 
 #define NUM_MENU_SECTIONS 1
-#define NUM_FIRST_MENU_ITEMS 2
-#define NUM_MENU_ICONS 2
+#define NUM_MENU_ITEMS 2
 
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
 static Window *s_window;
 static GBitmap *s_res_dublin_bus_logo;
-static GBitmap *s_menu_icons[NUM_MENU_ICONS];
+static GBitmap *s_menu_icons[NUM_MENU_ITEMS];
 static BitmapLayer *s_bitmaplayer_1;
 static InverterLayer *s_inverterlayer_1;
 static InverterLayer *s_inverterlayer_2;
@@ -24,7 +23,7 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
   switch (section_index) {
     case 0:
-      return NUM_FIRST_MENU_ITEMS;
+      return NUM_MENU_ITEMS;
     default:
       return 0;
   }
@@ -51,7 +50,8 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   switch (cell_index->row) {
     // This is the menu item with the cycling icon
     case 0:
-       show_stoplist();
+       show_loading();
+       getSavedStops();
       break;
     case 1:
        show_loading();

@@ -4,6 +4,7 @@
 #include "stoplist.h"
 #include "loading.h"
 #include "stop.h"
+#include "saved.h"
 
 // Key values for AppMessage Dictionary
 enum {
@@ -28,21 +29,10 @@ enum {
   ACTION_GET_SAVED_STOPS = 0, 
   ACTION_GET_NEAREST_STOPS = 1,
   ACTION_GETSTOP = 2,
-  ACTION_GETSTOPS = 3
+  ACTION_GETSTOPS = 3,
+  ACTION_SAVE_STOP = 4,
+  ACTION_DELETE_STOP = 5,
 };
-
-// Write message to buffer & send
-void send_message(void){
-// 	DictionaryIterator *iter;
-//  	app_message_outbox_begin(&iter);
-//   Tuplet cfg_val = TupletCString(STATUS_KEY, "sms");
-//   dict_write_tuplet(iter, &cfg_val);
-
-// // 	dict_write_uint8(iter, STATUS_KEY, 0x1);
-	
-// 	dict_write_end(iter);
-//   	app_message_outbox_send();
-}
 
 // Called when a message is received from PebbleKitJS
 static void in_received_handler(DictionaryIterator *received, void *context) {
@@ -56,16 +46,15 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: %d", (int)status->value->uint32);
     
     switch((int) action->value->uint32){
+      case ACTION_SAVE_STOP:
+        if(STATUS_END == (int) status->value->uint32){
+          hide_saved();
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED"); 
+        }
+        break;
       case ACTION_GETSTOPS:
         APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOPS"); 
         switch((int) status->value->uint32){
-          case STATUS_START:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: START"); 
-            break;
-          
-          case STATUS_INPROGRESS:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: IN-PROGRESS"); 
-            break;
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
             
@@ -90,9 +79,11 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                  );
               }  
             }
-          
+APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E1"); 
             show_stoplist();
+APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E2"); 
             remove_loading_window();
+APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: E3"); 
             break;
         }
         break;
@@ -100,15 +91,11 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
       case ACTION_GETSTOP:
         APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOP"); 
         switch((int) status->value->uint32){
-          case STATUS_START:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: START"); 
-            break;
-          case STATUS_INPROGRESS:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: IN-PROGRESS"); 
-            break;
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
             Tuple *stop_name = dict_find(received, NAME_KEY);
+            Tuple *stop_id = dict_find(received, ID_KEY);
+          
             for(int i = 0; i<10; i++){
               int routeId = 100+i;
               int destinationId = 110+i;
@@ -128,7 +115,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
               }  
             }
           
-            show_stop(stop_name->value->cstring);
+            show_stop(stop_name->value->cstring, stop_id->value->cstring);
             hide_loading();
             break;
         }
@@ -218,6 +205,16 @@ void getStop(char *id, char *name){
   dict_write_int16(iter, ACTION_KEY, ACTION_GETSTOP);
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_cstring(iter, NAME_KEY, name);
+  dict_write_end(iter);
+  app_message_outbox_send();
+}
+
+void saveStop(char *id){
+  // Request from API
+  DictionaryIterator *iter;
+ 	app_message_outbox_begin(&iter);
+  dict_write_int16(iter, ACTION_KEY, ACTION_SAVE_STOP);
+  dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();
 }

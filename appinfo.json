@@ -89,6 +89,11 @@
     "resources": {
         "media": [
             {
+                "file": "images/saved_large.png",
+                "name": "SAVED_LARGE",
+                "type": "png"
+            },
+            {
                 "file": "images/dublin-bus-logo-wnb.png",
                 "name": "DUBLIN_BUS_LOGO",
                 "type": "png"

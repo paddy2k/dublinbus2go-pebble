@@ -21,7 +21,15 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 }
 
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
-  return NUM_STOPS_IN_LIST;
+  int rows = 0;
+  int stopsSize = sizeof stops / sizeof stops[0];
+  for(int i = 0; i<stopsSize; i++){
+    if(stops[i]){
+     rows++; 
+    }  
+  }
+  
+  return rows;
 }
 
 static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
@@ -42,41 +50,43 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "STOPLIST - DRAW ROW: %d", cell_index->row);
-  Stop *stop = stops[cell_index->row];
-  stop_list[cell_index->row] = atoi(stop->id);
-  char buffer[20] = "                ";
-  int bufferSize = 24; //(25 -  strlen(stop->distance)) - strlen(stop->id);
-  bufferSize = bufferSize - strlen(stop->distance);
-  bufferSize = bufferSize - strlen(stop->id);
-  APP_LOG(APP_LOG_LEVEL_ERROR, "SIZE: %d", bufferSize);
-  switch(bufferSize){
-    case 12:
-      snprintf(buffer, sizeof buffer, "%s", "            ");
-      break;
-    case 13:
-      snprintf(buffer, sizeof buffer, "%s", "             ");
-      break;
-    case 14:
-      snprintf(buffer, sizeof buffer, "%s", "              ");
-      break;
-    case 15:
-      snprintf(buffer, sizeof buffer, "%s", "               ");
-      break;
-    case 16:
-      snprintf(buffer, sizeof buffer, "%s", "                ");
-      break;
-    case 17:
-      snprintf(buffer, sizeof buffer, "%s", "                 ");
-      break;
-    default:
-      snprintf(buffer, sizeof buffer, "%s", "                  ");
-      break;
-  }
+  if(stops[cell_index->row]){
+    Stop *stop = stops[cell_index->row];
+    stop_list[cell_index->row] = atoi(stop->id);
+    char buffer[20] = "                ";
+    int bufferSize = 24; //(25 -  strlen(stop->distance)) - strlen(stop->id);
+    bufferSize = bufferSize - strlen(stop->distance);
+    bufferSize = bufferSize - strlen(stop->id);
+    APP_LOG(APP_LOG_LEVEL_ERROR, "SIZE: %d", bufferSize);
+    switch(bufferSize){
+      case 12:
+        snprintf(buffer, sizeof buffer, "%s", "            ");
+        break;
+      case 13:
+        snprintf(buffer, sizeof buffer, "%s", "             ");
+        break;
+      case 14:
+        snprintf(buffer, sizeof buffer, "%s", "              ");
+        break;
+      case 15:
+        snprintf(buffer, sizeof buffer, "%s", "               ");
+        break;
+      case 16:
+        snprintf(buffer, sizeof buffer, "%s", "                ");
+        break;
+      case 17:
+        snprintf(buffer, sizeof buffer, "%s", "                 ");
+        break;
+      default:
+        snprintf(buffer, sizeof buffer, "%s", "                  ");
+        break;
+    }
+    
+    char bottom[256];
+    snprintf(bottom, sizeof bottom, "#%s%s%s %s", stop->id, buffer, stop->distance, stop->bearing);
   
-  char bottom[256];
-  snprintf(bottom, sizeof bottom, "#%s%s%s %s", stop->id, buffer, stop->distance, stop->bearing);
-
-  menu_cell_basic_draw(ctx, cell_layer, stop->name, bottom, NULL);
+    menu_cell_basic_draw(ctx, cell_layer, stop->name, bottom, NULL);
+  }
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
@@ -92,7 +102,6 @@ static void initialise_ui(void) {
   window_set_background_color(s_window, backgroundColour);
   window_set_fullscreen(s_window, false);
   
-  // s_menulayer_1
   s_menulayer_1 = menu_layer_create(GRect(0, 0, 144, 152));
   
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
@@ -109,6 +118,15 @@ static void initialise_ui(void) {
 }
 
 static void destroy_ui(void) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY"); 
+  
+  int stopsSize = sizeof stops / sizeof stops[0];
+  for(int i = 0; i<stopsSize; i++){
+    if(stops[i]){
+      stop_destroy(stops[i]);
+      stops[i] = NULL;
+    }
+  }
   window_destroy(s_window);
   menu_layer_destroy(s_menulayer_1);
 }
@@ -119,7 +137,9 @@ static void handle_window_unload(Window* window) {
 }
 
 void show_stoplist(void) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: I1"); 
   initialise_ui();
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: I2"); 
   window_set_window_handlers(s_window, (WindowHandlers) {
     .unload = handle_window_unload,
   });
