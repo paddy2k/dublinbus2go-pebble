@@ -6,8 +6,7 @@
 #include "app_message.h"
 
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
-#define NUM_BUSES_IN_LIST 10
-static Bus *buses[NUM_BUSES_IN_LIST] = {};
+#define NUM_BUSES_IN_LIST 20
   
 static Window *s_window;
 static GFont s_res_gothic_18;
@@ -15,11 +14,12 @@ static GFont s_res_gothic_18_bold;
 static TextLayer *s_headerlayer_1;
 static TextLayer *s_headerlayer_2;
 static ScrollLayer *s_scroll_layer;
+static Bus *buses[NUM_BUSES_IN_LIST] = {};
+static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
+
 char stop_id[6];
 char stop_name[20];
 int stoplist_type = 0;
-
-static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
 
 static void destroy_ui(void) {
   window_destroy(s_window);
@@ -72,7 +72,7 @@ static void initialise_ui() {
   s_window = window_create();
   window_set_background_color(s_window, GColorBlack);
   window_set_fullscreen(s_window, false);
-  GRect bounds = GRect(0, 24, 144, 148);
+  GRect bounds = GRect(0, 24, 144, 124);
 
   s_scroll_layer = scroll_layer_create(bounds);
   scroll_layer_set_click_config_onto_window(s_scroll_layer, s_window);

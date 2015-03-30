@@ -71,13 +71,13 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             show_no_stops();
             hide_loading();
           case STATUS_END:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");
             
-            for(int i = 0; i<10; i++){
-              int stopNameId = 200+i;
-              int stopIdId = 210+i;
-              int stopDistanceId = 220+i;
-              int stopBearingId = 230+i;
+            for(int i = 0; i<20; i++){
+              int stopNameId = 2000+i;
+              int stopIdId = 2100+i;
+              int stopDistanceId = 2200+i;
+              int stopBearingId = 2300+i;
               
               Tuple *stop_id = dict_find(received, stopIdId);
               if(stop_id){
@@ -126,10 +126,10 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
             Tuple *stop_id = dict_find(received, ID_KEY);
           
-            for(int i = 0; i<10; i++){
-              int routeId = 100+i;
-              int destinationId = 110+i;
-              int dueinId = 120+i;
+            for(int i = 0; i<20; i++){
+              int routeId = 1000+i;
+              int destinationId = 1100+i;
+              int dueinId = 1200+i;
               
               Tuple *bus_route = dict_find(received, routeId);
               if(bus_route){

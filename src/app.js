@@ -59,7 +59,7 @@ var db2go = db2go || {
     var stopI = (stopI * stopI/2)+1 || 1;
   
     var _this = this;
-    var minStopSize = 10;
+    var minStopSize = 20;
     var latDiff = 0.0015;
     var lngDiff = 0.002;
   
@@ -104,7 +104,7 @@ var db2go = db2go || {
     };
 
     var serialisedStops = '';
-    var maxResults = 15;
+    var maxResults = 20;
 
     if(!stops.length){
       message['status'] = sendStatus.error;
@@ -140,7 +140,7 @@ var db2go = db2go || {
       message["stop_bearing_"+index] = stop.bearing;
       message["stop_index_"+index] = index;
     });
-
+console.log(JSON.stringify(message));
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
   }
@@ -266,7 +266,7 @@ Pebble.addEventListener("appmessage",
 
         console.log("Get Stop: " +stopId );
         db2go.getStop(stopId, function(xml, a){
-          var maxResponse = 10;
+          var maxResponse = 20;
           var response = xml.getElementsByTagName("DocumentElement")[0];
           var message  = {
               "action": actions.getStop,
@@ -288,7 +288,7 @@ Pebble.addEventListener("appmessage",
           for(var i=0; i<responseSize; i++){
             var stop = response.childNodes[i].childNodes;
 
-            var route = stop[9].textContent;
+            var route = stop[13].textContent;
             var destination = stop[16].textContent.split(" via ")[0];
             var now = new Date(stop[27].textContent);
             var expected = new Date(stop[24].textContent);
