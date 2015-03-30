@@ -140,7 +140,7 @@ var db2go = db2go || {
       message["stop_bearing_"+index] = stop.bearing;
       message["stop_index_"+index] = index;
     });
-
+console.log(JSON.stringify(message));
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
   }
@@ -288,7 +288,7 @@ Pebble.addEventListener("appmessage",
           for(var i=0; i<responseSize; i++){
             var stop = response.childNodes[i].childNodes;
 
-            var route = stop[9].textContent;
+            var route = stop[13].textContent;
             var destination = stop[16].textContent.split(" via ")[0];
             var now = new Date(stop[27].textContent);
             var expected = new Date(stop[24].textContent);
