@@ -18,22 +18,6 @@ int stop_list[NUM_STOPS_IN_LIST];
 
 static Stop *stops[NUM_STOPS_IN_LIST] = {};
 
-void tap_handler(AccelAxisType axis, int32_t direction)
-{
-  // Build a short message one character at a time to cover all possible taps.
-  switch (stop_list_type) {
-    // This is the menu item with the cycling icon
-    case 0:
-       //show_loading();
-       //getSavedStops();
-      break;
-    case 1:
-       //show_loading();
-       //getNearestStops();
-      break;
-  }
-}
-
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
   return NUM_MENU_SECTIONS;
 }
@@ -67,7 +51,7 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "STOPLIST - DRAW ROW: %d", cell_index->row);
+  APP_LOG(APP_LOG_LEVEL_ERROR, "STOPLIST - DRAW ROW");
   if(stops[cell_index->row]){
     Stop *stop = stops[cell_index->row];
     stop_list[cell_index->row] = atoi(stop->id);
@@ -75,7 +59,6 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     int bufferSize = 24; //(25 -  strlen(stop->distance)) - strlen(stop->id);
     bufferSize = bufferSize - strlen(stop->distance);
     bufferSize = bufferSize - strlen(stop->id);
-    APP_LOG(APP_LOG_LEVEL_ERROR, "SIZE: %d", bufferSize);
     switch(bufferSize){
       case 12:
         snprintf(buffer, sizeof buffer, "%s", "            ");
@@ -109,7 +92,8 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
   Stop *stop = stops[cell_index->row];
-  getStop(stop->id, stop->name);
+  set_stop_name(stop->name);
+  getStop(stop->id);
   show_loading();  
 }
 
@@ -151,19 +135,19 @@ static void initialise_ui(void) {
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
   
-  accel_tap_service_subscribe(tap_handler);
-  
   stoplist_type = stop_list_type;
 }
 
-static void destroy_ui(void) {
+static void destroy_ui(void) {  
   int stopsSize = sizeof stops / sizeof stops[0];
   for(int i = 0; i<stopsSize; i++){
     if(stops[i]){
       stop_destroy(stops[i]);
       stops[i] = NULL;
+      free(stops[i]);
     }
   }
+  
   window_destroy(s_window);
   menu_layer_destroy(s_menulayer_1);
 }
@@ -183,6 +167,7 @@ void show_stoplist(void) {
 
 void hide_stoplist(void) {
   window_stack_remove(s_window, true);
+  destroy_ui();
 }
 
 void stoplist_add_stop(int index, const char *name, int id, const char *distance, const char *bearing){

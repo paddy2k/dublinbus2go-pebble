@@ -92,10 +92,24 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                    stop_distance->value->cstring, 
                    stop_bearing->value->cstring
                  );
+
+                 stop_name = NULL;
+                 free(stop_name);
+                 stop_id = NULL;
+                 free(stop_id);
+                 stop_distance = NULL;
+                 free(stop_distance);
+                 stop_bearing = NULL;
+                 free(stop_bearing);
               }  
             }
             show_stoplist();
             remove_loading_window();
+          
+            status = NULL;
+            free(status);
+            action = NULL;
+            free(action);
             break;
         }
         break;
@@ -110,7 +124,6 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             break;
           case STATUS_END:
             APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
-            Tuple *stop_name = dict_find(received, NAME_KEY);
             Tuple *stop_id = dict_find(received, ID_KEY);
           
             for(int i = 0; i<10; i++){
@@ -129,11 +142,25 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                    bus_destination->value->cstring,
                    (int)bus_duein->value->int16
                  );
+                
+                 bus_route = NULL;
+                 free(bus_route);
+                 bus_destination = NULL;
+                 free(bus_destination);
+                 bus_duein = NULL;
+                 free(bus_duein);
               }  
             }
           
-            show_stop(stop_name->value->cstring, stop_id->value->cstring);
+            show_stop(stop_id->value->cstring);
             hide_loading();
+          
+            stop_id = NULL;
+            free(stop_id);
+            status = NULL;
+            free(status);
+            action = NULL;
+            free(action);
             break;
         }
         break;
@@ -165,6 +192,11 @@ char *translate_error(AppMessageResult result) {
   }
 }
 
+
+static void out_sent_handler(DictionaryIterator *failed, void *context) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE SENT"); 
+}
+
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE FAILED"); 
@@ -182,13 +214,20 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
   if(status){
     APP_LOG(APP_LOG_LEVEL_DEBUG, "FAILED STATUS: %d", (int)status->value->uint32);
   }
+  
+  status = NULL;
+  free(status);
+  action = NULL;
+  free(action);
 }
   
 void message_init(void) {
 	// Register AppMessage handlers
 	app_message_register_inbox_received(in_received_handler); 
 	app_message_register_inbox_dropped(in_dropped_handler); 
-	app_message_register_outbox_failed(out_failed_handler);
+	
+  app_message_register_outbox_sent(out_sent_handler);
+  app_message_register_outbox_failed(out_failed_handler);
 		
 	app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
@@ -215,13 +254,13 @@ void getNearestStops(void){
   app_message_outbox_send();
 }
 
-void getStop(char *id, char *name){
+void getStop(char *id){
   // Request from API
   DictionaryIterator *iter;
  	app_message_outbox_begin(&iter);
   dict_write_int16(iter, ACTION_KEY, ACTION_GETSTOP);
   dict_write_cstring(iter, ID_KEY, id);
-  dict_write_cstring(iter, NAME_KEY, name);
+//   dict_write_cstring(iter, NAME_KEY, name);
   dict_write_end(iter);
   app_message_outbox_send();
 }

@@ -96,6 +96,7 @@ var db2go = db2go || {
     }
     
     var here = new LatLon(db2goLocation.coords.latitude, db2goLocation.coords.longitude);
+    
     console.log(stops.length + " stop nearby");
     var message = {
       "action": actions.getStops,
@@ -138,7 +139,7 @@ var db2go = db2go || {
       message["stop_bearing_"+index] = stop.bearing;
       message["stop_index_"+index] = index;
     });
-console.log(7);
+
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
   }
@@ -155,7 +156,8 @@ var db2goLocation = {
   },
   success: function(pos) {
     db2goLocation.coords = pos.coords;
-    console.log('Watch at: ' + pos.coords.latitude + ',' + pos.coords.longitude);
+    
+    console.log('Watch at: ' + db2goLocation.coords.latitude + ',' + db2goLocation.coords.longitude);
 
     if(db2goLocation.storedCallback){
       db2goLocation.storedCallback.call(this, db2goLocation.storedArguements[0], db2goLocation.storedArguements[1], db2goLocation.storedArguements[2]); 
@@ -220,7 +222,13 @@ Pebble.addEventListener("appmessage",
             tempIds.push(stopId);    
           }
         });
+        
         localStorage.setItem("stops", JSON.stringify(tempIds));
+        appMessageQueue.send({
+          "action" : actions.removeStop,
+          "status" : sendStatus.end
+        });
+        console.log('Stop Removed: '+ stopIds); 
         break;
       case actions.saveStop:
         window['stops'].forEach(function(stop){
@@ -235,7 +243,7 @@ Pebble.addEventListener("appmessage",
               "action" : actions.saveStop,
               "status" : sendStatus.end
             });
-            console.log('SAVED'); 
+            console.log('Stop Saved: '+ stopIds); 
           }
         });
         break;
@@ -249,17 +257,14 @@ Pebble.addEventListener("appmessage",
         break;
       case actions.getStop:
         var stopId = message.id;
-        var stopName = message.name;
 
-        console.log("Get Stop: " + stopName + ' : ' +stopId );
-        
+        console.log("Get Stop: " +stopId );
         db2go.getStop(stopId, function(xml, a){
           var maxResponse = 10;
           var response = xml.getElementsByTagName("DocumentElement")[0];
           var message  = {
               "action": actions.getStop,
               "status" : sendStatus.end,
-              "name" : stopName,
               "id" : ""+stopId+""
             }
 

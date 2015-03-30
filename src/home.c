@@ -71,6 +71,7 @@ static void initialise_ui(void) {
   window_set_fullscreen(s_window, false);
   
   s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
+  
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 13, 136, 40));
   bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
@@ -108,6 +109,10 @@ static void destroy_ui(void) {
   gbitmap_destroy(s_res_dublin_bus_logo);
   inverter_layer_destroy(s_inverterlayer_1);
   inverter_layer_destroy(s_inverterlayer_2);
+
+  for ( int i=0; i<NUM_MENU_ITEMS; i++ ) {
+    gbitmap_destroy( s_menu_icons[i] );
+  }
 }
 // END AUTO-GENERATED UI CODE
 
