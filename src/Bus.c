@@ -23,15 +23,16 @@ Bus *bus_create(const char *route, const char *destination, int dueIn)
 void bus_destroy(Bus *bus)
 {
     if (!bus) {
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY : No Bus"); 
+//         APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY : No Bus"); 
         return;
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY : No Bus"); 
   
     bus->route = NULL;
     free(bus->route);
+    bus->dueIn = NULL;
     free(bus->dueIn);
     bus->destination = NULL;
     free(bus->destination);
+    bus = NULL;
     free(bus);
 }

@@ -9,7 +9,7 @@
 
 #define NUM_MENU_SECTIONS 1
 #define NUM_MENU_ITEMS 5
-#define NUM_STOPS_IN_LIST 10
+#define NUM_STOPS_IN_LIST 20
   
 static Window *s_window;
 static MenuLayer *s_menulayer_1;

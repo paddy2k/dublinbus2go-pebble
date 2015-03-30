@@ -59,7 +59,7 @@ var db2go = db2go || {
     var stopI = (stopI * stopI/2)+1 || 1;
   
     var _this = this;
-    var minStopSize = 10;
+    var minStopSize = 20;
     var latDiff = 0.0015;
     var lngDiff = 0.002;
   
@@ -104,7 +104,7 @@ var db2go = db2go || {
     };
 
     var serialisedStops = '';
-    var maxResults = 15;
+    var maxResults = 20;
 
     if(!stops.length){
       message['status'] = sendStatus.error;
@@ -266,7 +266,7 @@ Pebble.addEventListener("appmessage",
 
         console.log("Get Stop: " +stopId );
         db2go.getStop(stopId, function(xml, a){
-          var maxResponse = 10;
+          var maxResponse = 20;
           var response = xml.getElementsByTagName("DocumentElement")[0];
           var message  = {
               "action": actions.getStop,
