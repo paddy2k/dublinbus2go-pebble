@@ -1,7 +1,7 @@
 var Utils = {
   prettyBearing : function(rawBearing){
     // Offset bearing by 45 deg
-    var correctedBearing = (rawBearing + 45)%360;
+    var correctedBearing = (rawBearing + 22.5)%360;
     if(correctedBearing <= 45){
       bearing = 'N';
     }
