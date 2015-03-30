@@ -1,7 +1,9 @@
 var Utils = {
   prettyBearing : function(rawBearing){
     // Offset bearing by 45 deg
+    var offset = 22.5;
     var correctedBearing = (rawBearing + 22.5)%360;
+    
     if(correctedBearing <= 45){
       bearing = 'N';
     }
@@ -29,6 +31,15 @@ var Utils = {
     
     return bearing;
   },
+  
+  testPrettyBearing: function (deg, bearing){
+    console.log('Prettifing '+deg+'°, expects '+bearing);
+    
+    var prettyBaring = Utils.prettyBearing(deg);
+    var result = prettyBaring==bearing ? 'PASS' : 'FAIL';
+    console.log('Result: '+ result);
+  },
+  
   prettyDistance : function(rawDistance){
     var distance;
     
