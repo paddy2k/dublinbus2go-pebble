@@ -119,11 +119,12 @@ var db2go = db2go || {
       var rawBearing = here.bearingTo(StopLocation);
       var distance = Utils.prettyDistance(rawDistance);
       var bearing = Utils.prettyBearing(rawBearing);
+      var nameArray = stop.address.split(',');
 
       stops[index].rawDistance = rawDistance;
       stops[index].distance = distance;
       stops[index].bearing = bearing;
-      stops[index].name = stop.address.split(',')[0];
+      stops[index].name = nameArray[1] ||  nameArray[0];
       stops[index].id = parseInt(stops[index].stopnumber)
     });
 
@@ -231,12 +232,13 @@ Pebble.addEventListener("appmessage",
         console.log('Stop Removed: '+ stopIds); 
         break;
       case actions.saveStop:
-        window['stops'].forEach(function(stop){
+        var stops = window['stops'] || JSON.parse(localStorage.getItem("stopsCache"));
+        stops.forEach(function(stop){
           var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
 
           if(message.id == stop.stopnumber){
             stopIds.push(message.id);
-            localStorage.setItem("stops", JSON.stringify(stopIds));            
+            localStorage.setItem("stops", JSON.stringify(stopIds));
             localStorage.setItem(message.id, JSON.stringify(stop));
 
             appMessageQueue.send({
@@ -253,6 +255,10 @@ Pebble.addEventListener("appmessage",
         db2go.getStops(function(stops){
           window['stops'] = stops;
           db2go.listStops(stops);
+          
+          setTimeout(function(){
+            localStorage.setItem("stopsCache", JSON.stringify(stops));
+          },0);
         });    
         break;
       case actions.getStop:
