@@ -60,8 +60,8 @@ var db2go = db2go || {
   
     var _this = this;
     var minStopSize = 20;
-    var latDiff = 0.0015;
-    var lngDiff = 0.002;
+    var latDiff = 0.003;
+    var lngDiff = 0.005;
   
     if(!db2goLocation.coords){
       db2goLocation.storedCallback = arguments.callee;

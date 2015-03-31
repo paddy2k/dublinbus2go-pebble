@@ -101,7 +101,7 @@ BusLayer *bus_layer_create(GRect frame)
         bus_layer->footer_text_layer, 
         "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
     );
-    
+      
     layer_add_child(
         bus_layer->root_layer, 
         (Layer *)bus_layer->route_text_layer
@@ -121,11 +121,17 @@ BusLayer *bus_layer_create(GRect frame)
         bus_layer->root_layer, 
         (Layer *)bus_layer->footer_text_layer
     );
+  
     return bus_layer;
 }
 
 void bus_layer_destroy(BusLayer *bus_layer)
 {
+  Layer *root_layer;
+  TextLayer *route_text_layer;
+  TextLayer *destination_text_layer;
+  TextLayer *due_text_layer;
+  TextLayer *footer_text_layer;
 
   text_layer_destroy(bus_layer->route_text_layer);
   text_layer_destroy(bus_layer->destination_text_layer);
@@ -133,14 +139,11 @@ void bus_layer_destroy(BusLayer *bus_layer)
   text_layer_destroy(bus_layer->footer_text_layer);
   layer_destroy(bus_layer->root_layer);
 
-  bus_layer = NULL;
   free(bus_layer);
 }
 
 void bus_layer_set_bus(BusLayer *bus_layer, Bus *bus)
 {
-  bus_layer->bus = bus;
-       
   text_layer_set_text(
     bus_layer->route_text_layer, 
     bus->route

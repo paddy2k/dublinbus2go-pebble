@@ -165,15 +165,16 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
           
             stop_id = NULL;
             free(stop_id);
-            status = NULL;
-            free(status);
-            action = NULL;
-            free(action);
             break;
         }
         break;
     }
   }
+  
+  status = NULL;
+  free(status);
+  action = NULL;
+  free(action);
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
@@ -251,6 +252,9 @@ void getSavedStops(void){
   dict_write_int16(iter, ACTION_KEY, ACTION_GET_SAVED_STOPS);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void getNearestStops(void){
@@ -260,6 +264,9 @@ void getNearestStops(void){
   dict_write_int16(iter, ACTION_KEY, ACTION_GET_NEAREST_STOPS);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void getStop(char *id){
@@ -268,9 +275,11 @@ void getStop(char *id){
  	app_message_outbox_begin(&iter);
   dict_write_int16(iter, ACTION_KEY, ACTION_GETSTOP);
   dict_write_cstring(iter, ID_KEY, id);
-//   dict_write_cstring(iter, NAME_KEY, name);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void saveStop(char *id){
@@ -281,6 +290,9 @@ void saveStop(char *id){
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void removeStop(char *id){
@@ -291,4 +303,7 @@ void removeStop(char *id){
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }

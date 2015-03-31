@@ -11,7 +11,6 @@ typedef struct BusLayer {
     TextLayer *destination_text_layer;
     TextLayer *due_text_layer;
     TextLayer *footer_text_layer;
-    Bus *bus;
 } BusLayer;
 
 // Bus layers are a set size (124 x 24). The size information in the frame argument is ignored.
