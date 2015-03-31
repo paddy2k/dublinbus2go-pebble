@@ -52,4 +52,4 @@ var Utils = {
 
     return distance;
   }
-}
+};

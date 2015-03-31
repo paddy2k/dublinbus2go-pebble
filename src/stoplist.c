@@ -51,12 +51,11 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "STOPLIST - DRAW ROW");
   if(stops[cell_index->row]){
     Stop *stop = stops[cell_index->row];
     stop_list[cell_index->row] = atoi(stop->id);
     char buffer[20] = "                ";
-    int bufferSize = 24; //(25 -  strlen(stop->distance)) - strlen(stop->id);
+    int bufferSize = 24;
     bufferSize = bufferSize - strlen(stop->distance);
     bufferSize = bufferSize - strlen(stop->id);
     switch(bufferSize){
@@ -104,6 +103,7 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
     case 0:
       removeStop(stop->id);
       show_removed();
+      hide_stoplist();
       break;
     case 1:
       saveStop(stop->id);
@@ -167,7 +167,6 @@ void show_stoplist(void) {
 
 void hide_stoplist(void) {
   window_stack_remove(s_window, true);
-  destroy_ui();
 }
 
 void stoplist_add_stop(int index, const char *name, int id, const char *distance, const char *bearing){

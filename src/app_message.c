@@ -3,12 +3,14 @@
 #include "app_message.h"
 #include "stoplist.h"
 #include "loading.h"
+#include "home.h"
 #include "stop.h"
 #include "saved.h"
 #include "removed.h"
 #include "no_buses.h"
 #include "no_stops.h"
 
+static bool debug = false;
   
 // Key values for AppMessage Dictionary
 enum {
@@ -37,6 +39,7 @@ enum {
   ACTION_GETSTOPS = 3,
   ACTION_SAVE_STOP = 4,
   ACTION_REMOVE_STOP = 5,
+  ACTION_SHOW_UI = 6
 };
 
 // Called when a message is received from PebbleKitJS
@@ -47,31 +50,39 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
 	action = dict_find(received, ACTION_KEY);
   status = dict_find(received, STATUS_KEY);
   if(action && status) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: %d", (int)action->value->uint32);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: %d", (int)status->value->uint32);
+    if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: %d", (int)action->value->uint32);}
+    if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: %d", (int)status->value->uint32);}
     
     switch((int) action->value->uint32){
+      case ACTION_SHOW_UI:
+        if(STATUS_END == (int) status->value->uint32){
+          show_ui();
+          if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "JS LOADED"); }
+        }
+        break;
       case ACTION_REMOVE_STOP:
         if(STATUS_END == (int) status->value->uint32){
-          hide_removed();
-          APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED"); 
+//           show_stoplist();
+          getSavedStops();
+//           hide_removed();
+          if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP REMOVED");}
         }
         break;
       case ACTION_SAVE_STOP:
         if(STATUS_END == (int) status->value->uint32){
           hide_saved();
-          APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED"); 
+          if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED");}
         }
         break;
       case ACTION_GETSTOPS:
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOPS"); 
+        if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOPS");}
         switch((int) status->value->uint32){
           case STATUS_ERROR:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STOPS ERROR");
+            if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOPS ERROR");}
             show_no_stops();
             hide_loading();
           case STATUS_END:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");
+            if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");}
             
             for(int i = 0; i<20; i++){
               int stopNameId = 2000+i;
@@ -105,6 +116,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             }
             show_stoplist();
             remove_loading_window();
+            hide_removed();
           
             status = NULL;
             free(status);
@@ -115,15 +127,15 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
         break;
       
       case ACTION_GETSTOP:
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOP"); 
+        if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "ACTION: GET STOP");}
         switch((int) status->value->uint32){
           case STATUS_ERROR:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ERROR");
+            if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ERROR");}
             show_no_buses();
             hide_loading();
             break;
           case STATUS_END:
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END"); 
+            if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");}
             Tuple *stop_id = dict_find(received, ID_KEY);
           
             for(int i = 0; i<20; i++){
@@ -157,15 +169,16 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
           
             stop_id = NULL;
             free(stop_id);
-            status = NULL;
-            free(status);
-            action = NULL;
-            free(action);
             break;
         }
         break;
     }
   }
+  
+  status = NULL;
+  free(status);
+  action = NULL;
+  free(action);
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
@@ -194,31 +207,33 @@ char *translate_error(AppMessageResult result) {
 
 
 static void out_sent_handler(DictionaryIterator *failed, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE SENT"); 
+  if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE SENT");}
 }
 
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE FAILED"); 
-  
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE REASON: %s", translate_error(reason)); 
-  
-  Tuple *action;
-	action = dict_find(failed, ACTION_KEY);
-  if(action){
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "FAILED ACTION: %d", (int)action->value->uint32);
+  if(debug){
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE FAILED"); 
+    
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "MESSAGE REASON: %s", translate_error(reason)); 
+    
+    Tuple *action;
+  	action = dict_find(failed, ACTION_KEY);
+    if(action){
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "FAILED ACTION: %d", (int)action->value->uint32);
+    }
+    
+    Tuple *status;
+  	status = dict_find(failed, STATUS_KEY);
+    if(status){
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "FAILED STATUS: %d", (int)status->value->uint32);
+    }
+    
+    status = NULL;
+    free(status);
+    action = NULL;
+    free(action);
   }
-  
-  Tuple *status;
-	status = dict_find(failed, STATUS_KEY);
-  if(status){
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "FAILED STATUS: %d", (int)status->value->uint32);
-  }
-  
-  status = NULL;
-  free(status);
-  action = NULL;
-  free(action);
 }
   
 void message_init(void) {
@@ -243,6 +258,9 @@ void getSavedStops(void){
   dict_write_int16(iter, ACTION_KEY, ACTION_GET_SAVED_STOPS);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void getNearestStops(void){
@@ -252,6 +270,9 @@ void getNearestStops(void){
   dict_write_int16(iter, ACTION_KEY, ACTION_GET_NEAREST_STOPS);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void getStop(char *id){
@@ -260,9 +281,11 @@ void getStop(char *id){
  	app_message_outbox_begin(&iter);
   dict_write_int16(iter, ACTION_KEY, ACTION_GETSTOP);
   dict_write_cstring(iter, ID_KEY, id);
-//   dict_write_cstring(iter, NAME_KEY, name);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void saveStop(char *id){
@@ -273,6 +296,9 @@ void saveStop(char *id){
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }
 
 void removeStop(char *id){
@@ -283,4 +309,7 @@ void removeStop(char *id){
   dict_write_cstring(iter, ID_KEY, id);
   dict_write_end(iter);
   app_message_outbox_send();
+  
+  iter = NULL;
+  free(iter);
 }

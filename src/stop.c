@@ -48,6 +48,7 @@ static void destroy_ui(void) {
       free(buses[i]);
     }
   }
+//   free(buses);
   
   int busLayersSize = sizeof bus_layers / sizeof bus_layers[0];
   for(int i = 0; i<busLayersSize; i++){
@@ -57,6 +58,7 @@ static void destroy_ui(void) {
       free(bus_layers[i]);
     }
   }
+//   free(bus_layers);
   
    accel_tap_service_unsubscribe();
 }
@@ -132,12 +134,11 @@ void hide_stop(void) {
 }
 
 void stop_add_bus(int index, const char *route, const char *destination, int dueIn){
-  Bus *bus = bus_create(
+  buses[index] = bus_create(
     route, 
     destination,
     dueIn
   );
-  buses[index] = bus;
 }
 
 void set_stop_name(const char *name) {
