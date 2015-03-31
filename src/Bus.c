@@ -34,5 +34,4 @@ void bus_destroy(Bus *bus)
     bus->destination = NULL;
     free(bus);
     bus = NULL;
-//     APP_LOG(APP_LOG_LEVEL_DEBUG, "DESTROY : OK"); 
 }

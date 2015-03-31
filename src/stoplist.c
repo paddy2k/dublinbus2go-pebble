@@ -51,12 +51,11 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "STOPLIST - DRAW ROW");
   if(stops[cell_index->row]){
     Stop *stop = stops[cell_index->row];
     stop_list[cell_index->row] = atoi(stop->id);
     char buffer[20] = "                ";
-    int bufferSize = 24; //(25 -  strlen(stop->distance)) - strlen(stop->id);
+    int bufferSize = 24;
     bufferSize = bufferSize - strlen(stop->distance);
     bufferSize = bufferSize - strlen(stop->id);
     switch(bufferSize){

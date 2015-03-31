@@ -89,7 +89,6 @@ static void handle_window_unload(Window* window) {
 
 void remove_loading_window(void){
   window_stack_remove(s_window, false);
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "REMOVED LOADING"); 
 }
 
 void show_loading(void) {
