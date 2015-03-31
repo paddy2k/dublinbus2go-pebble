@@ -178,6 +178,8 @@ var db2goLocation = {
     );
   }
 };
+// Kick-off GeoLocation before the customer needs it
+db2goLocation.get(function(){console.log('1st Fix')});
 
 Pebble.addEventListener('ready',
  function(e) {
