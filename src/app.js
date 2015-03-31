@@ -1,5 +1,26 @@
+var results = {
+  min: 10,
+  max: 20
+};
 
-var db2go = db2go || {
+var actions = {
+  getSavedStops: 0,
+  getNearestStops: 1,
+  getStop:  2,
+  getStops:  3,
+  saveStop:  4,
+  removeStop:  5,
+  showUi:  6,
+};
+
+var sendStatus = {
+  start: 0,
+  inProgress: 1,
+  end:  2,
+  error: 3
+}
+
+var db2go = {
   stopDetailsUrl: 'http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx?op=GetRealTimeStopData',
   geoLookupUrl: 'http://dublinbus.ie/Templates/Public/RoutePlannerService/RTPIMapHandler.ashx?&rjson=true',
   
@@ -56,20 +77,11 @@ var db2go = db2go || {
   },
   
   getStops : function(callback, stopI){
-    var stopI = (stopI * stopI/2)+1 || 1;
-  
-    var _this = this;
-    var minStopSize = 20;
     var latDiff = 0.003;
     var lngDiff = 0.005;
-  
-    if(!db2goLocation.coords){
-      db2goLocation.storedCallback = arguments.callee;
-      db2goLocation.storedArguements = arguments;
-      
-      return false;
-    }
     
+    var stopI = (stopI * stopI/2)+1 || 1;
+  
     var lat = db2goLocation.coords.latitude;
     var lng =  db2goLocation.coords.longitude;
   
@@ -78,8 +90,8 @@ var db2go = db2go || {
     var requestUrl = db2go.geoLookupUrl + '&ne=' + neCoords + '&sw=' + swCoords;
     
     db2go.getJSON(requestUrl, function (stops){
-      if(stops.points.length < minStopSize && stopI < 10){
-        console.log('More stop needed:', stops.points.length);
+      if(stops.points.length < results.min && stopI < 10){
+        console.log('More stops needed: '+ stops.points.length);
         db2go.getStops(callback, stopI);
       }
       else{
@@ -87,14 +99,7 @@ var db2go = db2go || {
       }
     });
   },
-  listStops: function(stops){
-    if(!db2goLocation.coords){
-      db2goLocation.storedCallback = arguments.callee;
-      db2goLocation.storedArguements = arguments;
-      
-      return false;
-    }
-    
+  listStops: function(stops){    
     var here = new LatLon(db2goLocation.coords.latitude, db2goLocation.coords.longitude);
     
     console.log(stops.length + " stop nearby");
@@ -102,9 +107,6 @@ var db2go = db2go || {
       "action": actions.getStops,
       "status" : sendStatus.end
     };
-
-    var serialisedStops = '';
-    var maxResults = 20;
 
     if(!stops.length){
       message['status'] = sendStatus.error;
@@ -131,7 +133,7 @@ var db2go = db2go || {
     stops.sort( function(a, b){ // Sorting
       return a.rawDistance - b.rawDistance;
     });
-    stops.splice(maxResults);
+    stops.splice(results.max);
 
     stops.forEach(function(stop, index){
       message["stop_name_"+index]= stop.name;
@@ -140,7 +142,7 @@ var db2go = db2go || {
       message["stop_bearing_"+index] = stop.bearing;
       message["stop_index_"+index] = index;
     });
-console.log(JSON.stringify(message));
+
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
   }
@@ -148,55 +150,43 @@ console.log(JSON.stringify(message));
 
 var db2goLocation = {
   coords: false,
-  storedCallback: false,
-  storedArguements: false,
   options: {
-    enableHighAccuracy: true, 
-    maximumAge: 10000, 
-    timeout: 10000
+    enableHighAccuracy: false, 
+    maximumAge: 600000, 
+    timeout: 5000
   },
   success: function(pos) {
     db2goLocation.coords = pos.coords;
     
     console.log('Watch at: ' + db2goLocation.coords.latitude + ',' + db2goLocation.coords.longitude);
-
-    if(db2goLocation.storedCallback){
-      db2goLocation.storedCallback.call(this, db2goLocation.storedArguements[0], db2goLocation.storedArguements[1], db2goLocation.storedArguements[2]); 
-      db2goLocation.storedCallback = false;
-      db2goLocation.storedArguements = false;
-    }
   },
   error: function(err) {
     console.log('location error (' + err.code + '): ' + err.message);
-  }  
+    appMessageQueue.send({
+      "action": actions.getStops,
+      "status" : sendStatus.error
+    });
+  },
+  get: function(callback){
+    navigator.geolocation.getCurrentPosition(
+      function(pos){
+        db2goLocation.success.call(this, pos);
+        callback.call()
+      }, 
+      db2goLocation.error, 
+      db2goLocation.options
+    );
+  }
 };
-
-var actions = {
-  getSavedStops: 0,
-  getNearestStops: 1,
-  getStop:  2,
-  getStops:  3,
-  saveStop:  4,
-  removeStop:  5,
-  showUi:  6,
-};
-
-var sendStatus = {
-  start: 0,
-  inProgress: 1,
-  end:  2,
-  error: 3
-}
 
 Pebble.addEventListener('ready',
  function(e) {
     // Request current position
-    console.log('Pebble Ready');
-    navigator.geolocation.watchPosition(db2goLocation.success, db2goLocation.error, db2goLocation.options);  
     appMessageQueue.send({
       "action" : actions.showUi,
       "status" : sendStatus.end
-     });
+     }); 
+    console.log('Pebble Ready');
  }
 );
 
@@ -216,8 +206,9 @@ Pebble.addEventListener("appmessage",
           var stop = JSON.parse(localStorage.getItem(stopId));
           stops.push(stop);
         });
-        
-        db2go.listStops(stops);
+        db2goLocation.get(function(){
+          db2go.listStops(stops);
+        });
         
         break;
       case actions.removeStop:
@@ -236,6 +227,7 @@ Pebble.addEventListener("appmessage",
         });
         console.log('Stop Removed: '+ stopIds); 
         break;
+        
       case actions.saveStop:
         var stops = window['stops'] || JSON.parse(localStorage.getItem("stopsCache"));
         stops.forEach(function(stop){
@@ -254,18 +246,21 @@ Pebble.addEventListener("appmessage",
           }
         });
         break;
+        
       case actions.getNearestStops:
         console.log("Get Nearest Stops: Start");
-       
-        db2go.getStops(function(stops){
-          window['stops'] = stops;
-          db2go.listStops(stops);
-          
-          setTimeout(function(){
-            localStorage.setItem("stopsCache", JSON.stringify(stops));
-          },0);
-        });    
+        db2goLocation.get(function(){
+          db2go.getStops(function(stops){
+            window['stops'] = stops;
+            db2go.listStops(stops);
+            
+            setTimeout(function(){
+              localStorage.setItem("stopsCache", JSON.stringify(stops));
+            },0);
+          });  
+        });
         break;
+        
       case actions.getStop:
         var stopId = message.id;
 
@@ -277,7 +272,7 @@ Pebble.addEventListener("appmessage",
               "action": actions.getStop,
               "status" : sendStatus.end,
               "id" : ""+stopId+""
-            }
+            };
 
           if(!response){
             appMessageQueue.send({

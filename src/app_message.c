@@ -10,7 +10,7 @@
 #include "no_buses.h"
 #include "no_stops.h"
 
-static bool debug = true;
+static bool debug = false;
   
 // Key values for AppMessage Dictionary
 enum {
