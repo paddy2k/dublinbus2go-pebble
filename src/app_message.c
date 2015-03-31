@@ -10,7 +10,7 @@
 #include "no_buses.h"
 #include "no_stops.h"
 
-static bool debug = false;
+static bool debug = true;
   
 // Key values for AppMessage Dictionary
 enum {
@@ -62,8 +62,10 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
         break;
       case ACTION_REMOVE_STOP:
         if(STATUS_END == (int) status->value->uint32){
-          hide_removed();
-          if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP SAVED");}
+//           show_stoplist();
+          getSavedStops();
+//           hide_removed();
+          if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP REMOVED");}
         }
         break;
       case ACTION_SAVE_STOP:
@@ -114,6 +116,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             }
             show_stoplist();
             remove_loading_window();
+            hide_removed();
           
             status = NULL;
             free(status);

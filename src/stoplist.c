@@ -103,6 +103,7 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
     case 0:
       removeStop(stop->id);
       show_removed();
+      hide_stoplist();
       break;
     case 1:
       saveStop(stop->id);
@@ -166,7 +167,6 @@ void show_stoplist(void) {
 
 void hide_stoplist(void) {
   window_stack_remove(s_window, true);
-  destroy_ui();
 }
 
 void stoplist_add_stop(int index, const char *name, int id, const char *distance, const char *bearing){
