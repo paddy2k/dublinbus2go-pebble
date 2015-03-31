@@ -3,6 +3,7 @@
 #include "app_message.h"
 #include "stoplist.h"
 #include "loading.h"
+#include "home.h"
 #include "stop.h"
 #include "saved.h"
 #include "removed.h"
@@ -37,6 +38,7 @@ enum {
   ACTION_GETSTOPS = 3,
   ACTION_SAVE_STOP = 4,
   ACTION_REMOVE_STOP = 5,
+  ACTION_SHOW_UI = 6
 };
 
 // Called when a message is received from PebbleKitJS
@@ -51,6 +53,12 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: %d", (int)status->value->uint32);
     
     switch((int) action->value->uint32){
+      case ACTION_SHOW_UI:
+        if(STATUS_END == (int) status->value->uint32){
+          show_ui();
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "JS LOADED"); 
+        }
+        break;
       case ACTION_REMOVE_STOP:
         if(STATUS_END == (int) status->value->uint32){
           hide_removed();

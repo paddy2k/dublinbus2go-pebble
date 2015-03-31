@@ -177,7 +177,8 @@ var actions = {
   getStop:  2,
   getStops:  3,
   saveStop:  4,
-  removeStop:  5
+  removeStop:  5,
+  showUi:  6,
 };
 
 var sendStatus = {
@@ -192,6 +193,10 @@ Pebble.addEventListener('ready',
     // Request current position
     console.log('Pebble Ready');
     navigator.geolocation.watchPosition(db2goLocation.success, db2goLocation.error, db2goLocation.options);  
+    appMessageQueue.send({
+      "action" : actions.showUi,
+      "status" : sendStatus.end
+     });
  }
 );
 

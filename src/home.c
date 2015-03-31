@@ -60,30 +60,15 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   }
 }
 
-static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
-  
-  s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON);
-  s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON);
-  
-  s_window = window_create();
-  window_set_background_color(s_window, backgroundColour);
-  window_set_fullscreen(s_window, false);
-  
-  s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
-  
-  // s_bitmaplayer_1
-  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 13, 136, 40));
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
-  //bitmap_layer_set_background_color(s_bitmaplayer_1, GColorBlack);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+void on_animation_stopped(Animation *anim, bool finished, void *context)
+{
   
   #ifndef PBL_COLOR
   // s_inverterlayer_1
   s_inverterlayer_1 = inverter_layer_create(GRect(0, 63, 144, 90));
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
   #endif
-  
+    
   // s_menulayer_1
   s_menulayer_1 = menu_layer_create(GRect(0, 63, 144, 90));
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
@@ -100,6 +85,48 @@ static void initialise_ui(void) {
   s_inverterlayer_2 = inverter_layer_create(GRect(0, 63, 144, 90));
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_2);
   #endif
+  
+  //Free the memory used by the Animation
+  property_animation_destroy((PropertyAnimation*) anim);
+}
+ 
+void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int delay)
+{
+    //Declare animation
+    PropertyAnimation *anim = property_animation_create_layer_frame(layer, start, finish);
+ 
+    //Set characteristics
+    animation_set_duration((Animation*) anim, duration);
+    animation_set_delay((Animation*) anim, delay);
+ 
+    //Set stopped handler to free memory
+    AnimationHandlers handlers = {
+        //The reference to the stopped handler is the only one in the array
+        .stopped = (AnimationStoppedHandler) on_animation_stopped
+    };
+    animation_set_handlers((Animation*) anim, handlers, NULL);
+ 
+    //Start animation!
+    animation_schedule((Animation*) anim);
+}
+
+static void initialise_ui(void) {
+  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  
+  s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON);
+  s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON);
+  
+  s_window = window_create();
+  window_set_background_color(s_window, backgroundColour);
+  window_set_fullscreen(s_window, false);
+  
+  s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
+  
+  // s_bitmaplayer_1
+  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 50, 136, 40));
+  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
+  //bitmap_layer_set_background_color(s_bitmaplayer_1, GColorBlack);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
 }
 
 static void destroy_ui(void) {
@@ -130,4 +157,10 @@ void show_home(void) {
 
 void hide_home(void) {
   window_stack_remove(s_window, true);
+}
+
+void show_ui(void){
+  GRect start = GRect(4, 50, 136, 40);
+  GRect finish = GRect(4, 13, 136, 40);
+  animate_layer(bitmap_layer_get_layer(s_bitmaplayer_1), &start, &finish, 300, 0);
 }
