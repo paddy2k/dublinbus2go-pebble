@@ -152,7 +152,7 @@ var db2goLocation = {
   coords: false,
   options: {
     enableHighAccuracy: false, 
-    maximumAge: 600000, 
+    maximumAge: 30000, 
     timeout: 5000
   },
   success: function(pos) {
@@ -284,25 +284,38 @@ Pebble.addEventListener("appmessage",
             return false;
           }
           
-          var responseSize = response.childNodes.length;
+          var stops= response.childNodes;
+          var responseSize = stops.length;
           responseSize = responseSize < maxResponse ? responseSize : maxResponse;
           
-          for(var i=0; i<responseSize; i++){
-            var stop = response.childNodes[i].childNodes;
+          for (var i=0;i<responseSize;i++){
+            var route, destination, now, expected, dueIn;
+            var stop = stops[i].childNodes;
 
-            var route = stop[13].textContent;
-            var destination = stop[16].textContent.split(" via ")[0];
-            var now = new Date(stop[27].textContent);
-            var expected = new Date(stop[24].textContent);
-            var dueIn = Math.round(((expected-now)/60)/1000);
-            
+            for (var j=0;j<stop.length;j++){
+              switch(stop[j].nodeName){
+                case 'MonitoredVehicleJourney_PublishedLineName': 
+                  route = stop[j].textContent;
+                  break;
+                case 'MonitoredVehicleJourney_DestinationName':
+                  destination = stop[j].textContent.split(" via ")[0];;
+                  break;
+                case 'Timestamp':
+                  now = new Date(stop[j].textContent);
+                  break;
+                case 'MonitoredCall_ExpectedArrivalTime':
+                  expected = new Date(stop[j].textContent);
+              }
+            }
+          
+            dueIn = Math.round(((expected-now)/60)/1000);
+          
             message['bus_route_'+i] = route;
             message['bus_destination_'+i] = destination;
             message['bus_duein_'+i] = dueIn;
-            
-            console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
-          }  
           
+            console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
+          }
           appMessageQueue.send(message);
         });
         break;

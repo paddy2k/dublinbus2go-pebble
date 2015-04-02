@@ -14,6 +14,7 @@ static GFont s_res_gothic_18_bold;
 static TextLayer *s_headerlayer_1;
 static TextLayer *s_headerlayer_2;
 static ScrollLayer *s_scroll_layer;
+static InverterLayer *s_inverterlayer_1;
 static Bus *buses[NUM_BUSES_IN_LIST] = {};
 static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
 
@@ -39,6 +40,7 @@ static void destroy_ui(void) {
   free(s_res_gothic_18);
   s_res_gothic_18_bold = NULL;
   free(s_res_gothic_18_bold);
+  inverter_layer_destroy(s_inverterlayer_1);
   
   int busesSize = sizeof buses / sizeof buses[0];
   for(int i = 0; i<busesSize; i++){
@@ -72,9 +74,9 @@ void tap_handler(AccelAxisType axis, int32_t direction)
 
 static void initialise_ui() {
   s_window = window_create();
-  window_set_background_color(s_window, GColorBlack);
+//   window_set_background_color(s_window, GColorBlack);
   window_set_fullscreen(s_window, false);
-  GRect bounds = GRect(0, 24, 144, 124);
+  GRect bounds = GRect(0, 24, 144, 130);
 
   s_scroll_layer = scroll_layer_create(bounds);
   scroll_layer_set_click_config_onto_window(s_scroll_layer, s_window);
@@ -109,6 +111,9 @@ static void initialise_ui() {
   
   scroll_layer_set_content_size(s_scroll_layer, GSize(bounds.size.w, (24*rows)));
   layer_add_child(window_get_root_layer(s_window), scroll_layer_get_layer(s_scroll_layer));
+  
+  s_inverterlayer_1 = inverter_layer_create(bounds);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
   
   accel_tap_service_subscribe(tap_handler);
 }

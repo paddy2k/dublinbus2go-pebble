@@ -59,26 +59,38 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     bufferSize = bufferSize - strlen(stop->distance);
     bufferSize = bufferSize - strlen(stop->id);
     switch(bufferSize){
+      case 8:
+        snprintf(buffer, sizeof buffer, "%s", "  ");
+        break;
+      case 9:
+        snprintf(buffer, sizeof buffer, "%s", "    ");
+        break;
+      case 10:
+        snprintf(buffer, sizeof buffer, "%s", "      ");
+        break;
+      case 11:
+        snprintf(buffer, sizeof buffer, "%s", "        ");
+        break;
       case 12:
-        snprintf(buffer, sizeof buffer, "%s", "            ");
+        snprintf(buffer, sizeof buffer, "%s", "          ");
         break;
       case 13:
-        snprintf(buffer, sizeof buffer, "%s", "             ");
+        snprintf(buffer, sizeof buffer, "%s", "           ");
         break;
       case 14:
-        snprintf(buffer, sizeof buffer, "%s", "              ");
+        snprintf(buffer, sizeof buffer, "%s", "            ");
         break;
       case 15:
-        snprintf(buffer, sizeof buffer, "%s", "               ");
+        snprintf(buffer, sizeof buffer, "%s", "             ");
         break;
       case 16:
-        snprintf(buffer, sizeof buffer, "%s", "                ");
+        snprintf(buffer, sizeof buffer, "%s", "              ");
         break;
       case 17:
-        snprintf(buffer, sizeof buffer, "%s", "                 ");
+        snprintf(buffer, sizeof buffer, "%s", "               ");
         break;
       default:
-        snprintf(buffer, sizeof buffer, "%s", "                  ");
+        snprintf(buffer, sizeof buffer, "%s", "                ");
         break;
     }
     
