@@ -18,8 +18,11 @@ static void click_config_provider(void *context) {
 }
 
 static void initialise_ui(void) {
+  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  
   s_saved_window = window_create();
-  window_set_background_color(s_saved_window, GColorBlack);
+  window_set_background_color(s_saved_window, backgroundColour);
   window_set_fullscreen(s_saved_window, false);
   
   s_res_saved_large = gbitmap_create_with_resource(RESOURCE_ID_SAVED_LARGE);
@@ -32,7 +35,7 @@ static void initialise_ui(void) {
   // s_textlayer_1
   s_textlayer_1 = text_layer_create(GRect(0, 99, 144, 49));
   text_layer_set_background_color(s_textlayer_1, GColorClear);
-  text_layer_set_text_color(s_textlayer_1, GColorWhite);
+  text_layer_set_text_color(s_textlayer_1, textColour);
   text_layer_set_text(s_textlayer_1, "Saved");
   text_layer_set_text_alignment(s_textlayer_1, GTextAlignmentCenter);
   text_layer_set_font(s_textlayer_1, s_res_roboto_condensed_21);

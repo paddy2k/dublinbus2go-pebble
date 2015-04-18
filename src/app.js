@@ -145,6 +145,54 @@ var db2go = {
 
     appMessageQueue.send(message);
     console.log("LIST STOPS: End");
+  },
+  
+  storedStops: function(){
+    var stops = []; 
+    var stopIds = JSON.parse(localStorage.getItem("stops"));
+    stopIds.forEach(function(stopId){
+      var stop = JSON.parse(localStorage.getItem(stopId));
+      stops.push(stop);
+    });
+    
+    return stops;
+  },
+  encodeStops: function(stops){
+  	var stopsParts = [];
+  
+  	stops.forEach(function(stop){
+      var routes = [];
+      stop.routes.split('<br/>').forEach(function(route){
+        routes.push(route.split(' ')[0]);
+      })
+      routes.splice(-1); // Remove trailing space
+      console.log(stop.name);
+      console.log(JSON.stringify(routes));
+  		stop.exclude = stop.exclude ||[];
+  		var stopParts = [
+  			stop.id,
+  			encodeURIComponent(stop.name),
+  			stop.exclude.join('|')
+  		];
+  		stopsParts.push(stopParts.join('='));
+  	});
+  
+  	return stopsParts.join('~');
+  },
+  decodeStops: function (payload){
+    var stops = [];
+    var parts = payload.split('~');
+  
+    parts.forEach(function(stop){
+      var temp = stop.split('=');
+      stops.push({
+        id: temp[0],
+        name: decodeURIComponent(temp[1]),
+        exclude: temp[2].split('|')
+      });
+    });
+  
+    return stops;
   }
 };
 
@@ -200,14 +248,17 @@ Pebble.addEventListener("appmessage",
 
     switch(message.action){
       case actions.getSavedStops:
-        var stops = [];
         console.log("Get Saved Stops: Start");
+
+//         // START DEBUG
+//         var message = JSON.parse('{"action":3,"status":2,"stop_name_0":" Watling St","stop_id_0":1997,"stop_distance_0":"295m","stop_bearing_0":"N","stop_name_1":" Watling Street","stop_id_1":1940,"stop_distance_1":"296m","stop_bearing_1":"N","stop_name_2":" Bridgefoot Street","stop_id_2":1939,"stop_distance_2":"344m","stop_bearing_2":"NE","stop_name_3":" Marion Villas","stop_id_3":2379,"stop_distance_3":"347m","stop_bearing_3":"S","stop_name_4":" Bridgefoot Street","stop_id_4":1998,"stop_distance_4":"362m","stop_bearing_4":"NE","stop_name_5":" Ardee St","stop_id_5":2314,"stop_distance_5":"382m","stop_bearing_5":"SE","stop_name_6":" Donore Avenue","stop_id_6":2315,"stop_distance_6":"384m","stop_bearing_6":"S","stop_name_7":" Echlin Street","stop_id_7":1996,"stop_distance_7":"387m","stop_bearing_7":"NW","stop_name_8":" Ardee St","stop_id_8":2380,"stop_distance_8":"400m","stop_bearing_8":"SE","stop_name_9":" Steevens Lane","stop_id_9":1941,"stop_distance_9":"404m","stop_bearing_9":"NW","stop_name_10":" Brabazon Street","stop_id_10":7412,"stop_distance_10":"425m","stop_bearing_10":"E","stop_name_11":" Brabazon Row","stop_id_11":2382,"stop_distance_11":"472m","stop_bearing_11":"SE","stop_name_12":" Ardee Court","stop_id_12":2313,"stop_distance_12":"474m","stop_bearing_12":"SE","stop_name_13":" Cork Street","stop_id_13":4854,"stop_distance_13":"479m","stop_bearing_13":"SE","stop_name_14":" Brabazon Street","stop_id_14":5025,"stop_distance_14":"482m","stop_bearing_14":"E","stop_name_15":" Chamber Street","stop_id_15":309,"stop_distance_15":"511m","stop_bearing_15":"SE","stop_name_16":" Thomas Road","stop_id_16":308,"stop_distance_16":"574m","stop_bearing_16":"SE"}');
+//         setTimeout(function(){
+//           appMessageQueue.send(message);  
+//         }, 1000);
+//         return;
+//         // END DEBUG
         
-        var stopIds = JSON.parse(localStorage.getItem("stops"));
-        stopIds.forEach(function(stopId){
-          var stop = JSON.parse(localStorage.getItem(stopId));
-          stops.push(stop);
-        });
+        var stops = db2go.storedStops();
         db2goLocation.get(function(){
           db2go.listStops(stops);
         });
@@ -222,19 +273,18 @@ Pebble.addEventListener("appmessage",
           }
         });
         
-        localStorage.setItem("stops", JSON.stringify(tempIds));
         appMessageQueue.send({
           "action" : actions.removeStop,
           "status" : sendStatus.end
         });
+        localStorage.setItem("stops", JSON.stringify(tempIds));
         console.log('Stop Removed: '+ stopIds); 
         break;
         
       case actions.saveStop:
         var stops = window['stops'] || JSON.parse(localStorage.getItem("stopsCache"));
+        var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
         stops.forEach(function(stop){
-          var stopIds = JSON.parse(localStorage.getItem("stops")) || [];
-
           if(message.id == stop.stopnumber){
             stopIds.push(message.id);
             localStorage.setItem("stops", JSON.stringify(stopIds));
@@ -251,6 +301,16 @@ Pebble.addEventListener("appmessage",
         
       case actions.getNearestStops:
         console.log("Get Nearest Stops: Start");
+        
+//         // START DEBUG
+//         var message = JSON.parse('{"action":3,"status":2,"stop_name_0":" Watling St","stop_id_0":1997,"stop_distance_0":"295m","stop_bearing_0":"N","stop_name_1":" Watling Street","stop_id_1":1940,"stop_distance_1":"296m","stop_bearing_1":"N","stop_name_2":" Bridgefoot Street","stop_id_2":1939,"stop_distance_2":"344m","stop_bearing_2":"NE","stop_name_3":" Marion Villas","stop_id_3":2379,"stop_distance_3":"347m","stop_bearing_3":"S","stop_name_4":" Bridgefoot Street","stop_id_4":1998,"stop_distance_4":"362m","stop_bearing_4":"NE","stop_name_5":" Ardee St","stop_id_5":2314,"stop_distance_5":"382m","stop_bearing_5":"SE","stop_name_6":" Donore Avenue","stop_id_6":2315,"stop_distance_6":"384m","stop_bearing_6":"S","stop_name_7":" Echlin Street","stop_id_7":1996,"stop_distance_7":"387m","stop_bearing_7":"NW","stop_name_8":" Ardee St","stop_id_8":2380,"stop_distance_8":"400m","stop_bearing_8":"SE","stop_name_9":" Steevens Lane","stop_id_9":1941,"stop_distance_9":"404m","stop_bearing_9":"NW","stop_name_10":" Brabazon Street","stop_id_10":7412,"stop_distance_10":"425m","stop_bearing_10":"E","stop_name_11":" Brabazon Row","stop_id_11":2382,"stop_distance_11":"472m","stop_bearing_11":"SE","stop_name_12":" Ardee Court","stop_id_12":2313,"stop_distance_12":"474m","stop_bearing_12":"SE","stop_name_13":" Cork Street","stop_id_13":4854,"stop_distance_13":"479m","stop_bearing_13":"SE","stop_name_14":" Brabazon Street","stop_id_14":5025,"stop_distance_14":"482m","stop_bearing_14":"E","stop_name_15":" Chamber Street","stop_id_15":309,"stop_distance_15":"511m","stop_bearing_15":"SE","stop_name_16":" Thomas Road","stop_id_16":308,"stop_distance_16":"574m","stop_bearing_16":"SE"}');
+//         setTimeout(function(){
+//           appMessageQueue.send(message);  
+//         }, 1000);
+//         return;
+//         // END DEBUG
+
+        
         db2goLocation.get(function(){
           db2go.getStops(function(stops){
             window['stops'] = stops;
@@ -267,6 +327,15 @@ Pebble.addEventListener("appmessage",
         var stopId = message.id;
 
         console.log("Get Stop: " +stopId );
+        
+//         // START DEBUG
+//         var message = JSON.parse('{"action":2,"status":2,"id":"1997","bus_route_0":"123","bus_destination_0":"Marino","bus_duein_0":2,"bus_route_1":"40","bus_destination_1":"Finglas","bus_duein_1":10,"bus_route_2":"123","bus_destination_2":"Marino","bus_duein_2":12,"bus_route_3":"13","bus_destination_3":"Harristown","bus_duein_3":17,"bus_route_4":"40","bus_destination_4":"Finglas","bus_duein_4":24,"bus_route_5":"123","bus_destination_5":"Marino","bus_duein_5":29,"bus_route_6":"13","bus_destination_6":"Harristown","bus_duein_6":31,"bus_route_7":"40","bus_destination_7":"Finglas","bus_duein_7":46,"bus_route_8":"123","bus_destination_8":"Marino","bus_duein_8":49,"bus_route_9":"13","bus_destination_9":"Harristown","bus_duein_9":56}');
+//         setTimeout(function(){
+//           appMessageQueue.send(message);  
+//         }, 1000);
+//         return;
+//         // END DEBUG
+        
         db2go.getStop(stopId, function(xml, a){
           var maxResponse = 20;
           var response = xml.getElementsByTagName("DocumentElement")[0];
@@ -316,8 +385,25 @@ Pebble.addEventListener("appmessage",
           
             console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
           }
+          console.log(JSON.stringify(message));
           appMessageQueue.send(message);
         });
         break;
     }
   });
+
+Pebble.addEventListener('showConfiguration', function(e) {
+  var stops = db2go.storedStops();
+  var message = db2go.encodeStops(stops);
+  var configPage = 'http://192.168.1.7:8080/';
+  
+  console.log('SHow Configuration');
+  Pebble.openURL(configPage+'#'+message);
+});
+
+Pebble.addEventListener('webviewclosed',
+  function(e) {
+    var configuration = JSON.parse(decodeURIComponent(e.response));
+    console.log('Configuration window returned: ', JSON.stringify(configuration));
+  }
+);

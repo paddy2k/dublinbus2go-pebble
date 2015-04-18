@@ -74,7 +74,9 @@ void tap_handler(AccelAxisType axis, int32_t direction)
 
 static void initialise_ui() {
   s_window = window_create();
-//   window_set_background_color(s_window, GColorBlack);
+  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
+  window_set_background_color(s_window, backgroundColour);
+  
   window_set_fullscreen(s_window, false);
   GRect bounds = GRect(0, 24, 144, 130);
 
@@ -86,14 +88,17 @@ static void initialise_ui() {
   
   
   // s_headerlayer_1
-  s_headerlayer_1 = text_layer_create(GRect(0, 0, 144, 22));
+  s_headerlayer_1 = text_layer_create(GRect(0, 0, 144, 24));
   text_layer_set_text(s_headerlayer_1, "                                       Due");
+  text_layer_set_background_color(s_headerlayer_1, GColorBlack);
   text_layer_set_font(s_headerlayer_1, s_res_gothic_18);
+  text_layer_set_text_color(s_headerlayer_1, GColorWhite);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_1);
   
   // s_headerlayer_2
-  s_headerlayer_2 = text_layer_create(GRect(2, 0, 100, 20));
+  s_headerlayer_2 = text_layer_create(GRect(2, 0, 100, 24));
   text_layer_set_background_color(s_headerlayer_2, GColorClear);
+  text_layer_set_text_color(s_headerlayer_2, GColorWhite);
   text_layer_set_text(s_headerlayer_2, stop_name);
   text_layer_set_font(s_headerlayer_2, s_res_gothic_18_bold);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_2);
@@ -112,9 +117,11 @@ static void initialise_ui() {
   scroll_layer_set_content_size(s_scroll_layer, GSize(bounds.size.w, (24*rows)));
   layer_add_child(window_get_root_layer(s_window), scroll_layer_get_layer(s_scroll_layer));
   
-  s_inverterlayer_1 = inverter_layer_create(bounds);
+  #ifndef PBL_COLOR
+  s_inverterlayer_1 = inverter_layer_create(GRect(0, 0, 144, 168));
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
-  
+  #endif
+    
   accel_tap_service_subscribe(tap_handler);
 }
 

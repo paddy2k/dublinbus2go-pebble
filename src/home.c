@@ -70,7 +70,12 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
   #endif
     
   // s_menulayer_1
-  s_menulayer_1 = menu_layer_create(GRect(0, 63, 144, 90));
+  GRect menuSize = GRect(0, 63, 144, 90);
+  #ifdef PBL_COLOR
+  menuSize = GRect(0, 64, 144, 115);
+  #endif
+  
+  s_menulayer_1 = menu_layer_create(menuSize);
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
     .get_num_rows = menu_get_num_rows_callback,
@@ -113,8 +118,8 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
 static void initialise_ui(void) {
   GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
   
-  s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON);
-  s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON);
+  s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON_BLACK);
+  s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);

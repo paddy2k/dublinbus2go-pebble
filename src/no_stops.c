@@ -11,8 +11,11 @@ static TextLayer *s_textlayer_2;
 static BitmapLayer *s_bitmaplayer_1;
 
 static void initialise_ui(void) {
+  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  
   s_window = window_create();
-  window_set_background_color(s_window, GColorBlack);
+  window_set_background_color(s_window, backgroundColour);
   window_set_fullscreen(s_window, false);
   
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);
@@ -22,7 +25,7 @@ static void initialise_ui(void) {
   // s_textlayer_1
   s_textlayer_1 = text_layer_create(GRect(20, 95, 104, 95));
   text_layer_set_background_color(s_textlayer_1, GColorClear);
-  text_layer_set_text_color(s_textlayer_1, GColorWhite);
+  text_layer_set_text_color(s_textlayer_1, textColour);
   text_layer_set_text(s_textlayer_1, "No Stops");
   text_layer_set_text_alignment(s_textlayer_1, GTextAlignmentCenter);
   text_layer_set_font(s_textlayer_1, s_res_roboto_condensed_21);
@@ -36,7 +39,7 @@ static void initialise_ui(void) {
   // s_textlayer_2
   s_textlayer_2 = text_layer_create(GRect(0, 130, 144, 20));
   text_layer_set_background_color(s_textlayer_2, GColorClear);
-  text_layer_set_text_color(s_textlayer_2, GColorWhite);
+  text_layer_set_text_color(s_textlayer_2, textColour);
   text_layer_set_text(s_textlayer_2, "Long press stop to save");
   text_layer_set_text_alignment(s_textlayer_2, GTextAlignmentCenter);
   text_layer_set_font(s_textlayer_2, s_res_gothic_14);
