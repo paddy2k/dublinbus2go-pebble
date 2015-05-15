@@ -127,12 +127,6 @@ BusLayer *bus_layer_create(GRect frame)
 
 void bus_layer_destroy(BusLayer *bus_layer)
 {
-  Layer *root_layer;
-  TextLayer *route_text_layer;
-  TextLayer *destination_text_layer;
-  TextLayer *due_text_layer;
-  TextLayer *footer_text_layer;
-
   text_layer_destroy(bus_layer->route_text_layer);
   text_layer_destroy(bus_layer->destination_text_layer);
   text_layer_destroy(bus_layer->due_text_layer);

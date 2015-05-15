@@ -159,9 +159,19 @@
     "resources": {
         "media": [
             {
-                "file": "images/info_large.png",
-                "name": "INFO_LARGE",
+                "file": "images/dublin-bus-logo-wb.png",
+                "name": "DUBLIN_BUS_LOGO",
                 "type": "png"
+            },
+            {
+                "file": "images/nearest_i.png",
+                "name": "NEAREST_ICON",
+                "type": "png-trans"
+            },
+            {
+                "file": "images/favourites_bw.png",
+                "name": "FAVOURITES_ICON",
+                "type": "png-trans"
             },
             {
                 "file": "images/removed_large.png",
@@ -174,24 +184,14 @@
                 "type": "png"
             },
             {
-                "file": "images/dublin-bus-logo-wnb.png",
-                "name": "DUBLIN_BUS_LOGO",
-                "type": "png"
-            },
-            {
-                "file": "images/nearest.png",
-                "name": "NEAREST_ICON",
+                "file": "images/info_large.png",
+                "name": "INFO_LARGE",
                 "type": "png"
             },
             {
                 "file": "images/dublin-bus-logo-only-bw.png",
                 "menuIcon": true,
                 "name": "DUBLIN_BUS_LOGO_SMALL",
-                "type": "png"
-            },
-            {
-                "file": "images/favourites.png",
-                "name": "FAVOURITES_ICON",
                 "type": "png"
             },
             {
@@ -204,11 +204,11 @@
     "sdkVersion": "3",
     "shortName": "Dublin Bus",
     "targetPlatforms": [
-        "aplite"
+        "aplite",
+        "basalt"
     ],
     "uuid": "5094f98c-7087-42de-aa2e-081c6f11c346",
-    "versionCode": 1,
-    "versionLabel": "1.8",
+    "versionLabel": "1.9",
     "watchapp": {
         "watchface": false
     }

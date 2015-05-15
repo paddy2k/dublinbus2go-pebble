@@ -13,6 +13,7 @@
   
 static Window *s_window;
 static MenuLayer *s_menulayer_1;
+
 int stop_list_type = 0;
 int stop_list[NUM_STOPS_IN_LIST];
 
@@ -130,9 +131,13 @@ static void initialise_ui(void) {
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
-  window_set_fullscreen(s_window, false);
   
-  s_menulayer_1 = menu_layer_create(GRect(0, 0, 144, 152));
+  
+  GRect bounds = layer_get_bounds(window_get_root_layer(s_window));
+  
+  GRect menuSize = GRect(0, 0, bounds.size.w, bounds.size.h);
+    
+  s_menulayer_1 = menu_layer_create(menuSize);
   
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
@@ -143,6 +148,11 @@ static void initialise_ui(void) {
     .select_click = menu_select_callback,
     .select_long_click = menu_select_long_callback,
   });
+  
+  #ifdef PBL_SDK_3
+  menu_layer_set_normal_colors(s_menulayer_1, GColorYellow, GColorBlack);
+  menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
+  #endif
   
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
