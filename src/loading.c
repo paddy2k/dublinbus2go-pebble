@@ -44,12 +44,15 @@ static void initialise_ui(void) {
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
-  window_set_fullscreen(s_window, false);
   
   s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
 
   // s_bitmaplayer_1
-  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 13, 136, 40));
+  GRect imageSize = GRect(4, 13, 136, 40);
+  #ifdef PBL_SDK_3
+  imageSize = GRect(4, 22, 136, 40);
+  #endif
+  s_bitmaplayer_1 = bitmap_layer_create(imageSize);
   bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
   

@@ -12,9 +12,12 @@ static Window *s_window;
 static GBitmap *s_res_dublin_bus_logo;
 static GBitmap *s_menu_icons[NUM_MENU_ITEMS];
 static BitmapLayer *s_bitmaplayer_1;
+static MenuLayer *s_menulayer_1;
+
+#ifdef PBL_BW
 static InverterLayer *s_inverterlayer_1;
 static InverterLayer *s_inverterlayer_2;
-static MenuLayer *s_menulayer_1;
+#endif
 
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
   return NUM_MENU_SECTIONS;
@@ -61,20 +64,19 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
 }
 
 void on_animation_stopped(Animation *anim, bool finished, void *context)
-{
+{    
+  // s_menulayer_1
+  GRect menuSize = GRect(0, 63, 144, 90);
+  #ifdef PBL_SDK_3
+  menuSize = GRect(0, 80, 144, 115);
+  #endif
   
-  #ifndef PBL_COLOR
+  #ifdef PBL_PLATFORM_APLITE
   // s_inverterlayer_1
-  s_inverterlayer_1 = inverter_layer_create(GRect(0, 63, 144, 90));
+  s_inverterlayer_1 = inverter_layer_create(menuSize);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
   #endif
     
-  // s_menulayer_1
-  GRect menuSize = GRect(0, 63, 144, 90);
-  #ifdef PBL_COLOR
-  menuSize = GRect(0, 64, 144, 115);
-  #endif
-  
   s_menulayer_1 = menu_layer_create(menuSize);
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
@@ -83,13 +85,19 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
     .select_click = menu_select_callback,
   });
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
   
-  #ifndef PBL_COLOR
-  // s_inverterlayer_2
-  s_inverterlayer_2 = inverter_layer_create(GRect(0, 63, 144, 90));
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_2);
+  #ifdef PBL_COLOR
+  menu_layer_set_normal_colors(s_menulayer_1, GColorYellow, GColorBlack);
+  menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
   #endif
+  
+  layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
+
+  #ifdef PBL_PLATFORM_APLITE
+  // s_inverterlayer_2
+  s_inverterlayer_2 = inverter_layer_create(menuSize);
+  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_2);
+  #endif  
   
   //Free the memory used by the Animation
   property_animation_destroy((PropertyAnimation*) anim);
@@ -123,14 +131,15 @@ static void initialise_ui(void) {
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
-  window_set_fullscreen(s_window, false);
   
   s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
   
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 50, 136, 40));
+  #ifdef PBL_SDK_3
+  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 62, 136, 40));
+  #endif
   bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
-  //bitmap_layer_set_background_color(s_bitmaplayer_1, GColorBlack);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
 }
 
@@ -139,9 +148,12 @@ static void destroy_ui(void) {
   bitmap_layer_destroy(s_bitmaplayer_1);
   menu_layer_destroy(s_menulayer_1);
   gbitmap_destroy(s_res_dublin_bus_logo);
+  
+  #ifdef PBL_BW
   inverter_layer_destroy(s_inverterlayer_1);
   inverter_layer_destroy(s_inverterlayer_2);
-
+  #endif
+  
   for ( int i=0; i<NUM_MENU_ITEMS; i++ ) {
     gbitmap_destroy( s_menu_icons[i] );
   }
@@ -167,5 +179,11 @@ void hide_home(void) {
 void show_ui(void){
   GRect start = GRect(4, 50, 136, 40);
   GRect finish = GRect(4, 13, 136, 40);
+  #ifdef PBL_SDK_3
+  start = GRect(4, 60, 136, 40);
+  finish = GRect(4, 22, 136, 40);
+  #endif
+  
+  
   animate_layer(bitmap_layer_get_layer(s_bitmaplayer_1), &start, &finish, 300, 0);
 }

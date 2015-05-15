@@ -309,7 +309,6 @@ Pebble.addEventListener("appmessage",
 //         }, 1000);
 //         return;
 //         // END DEBUG
-
         
         db2goLocation.get(function(){
           db2go.getStops(function(stops){

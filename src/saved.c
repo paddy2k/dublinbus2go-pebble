@@ -23,7 +23,6 @@ static void initialise_ui(void) {
   
   s_saved_window = window_create();
   window_set_background_color(s_saved_window, backgroundColour);
-  window_set_fullscreen(s_saved_window, false);
   
   s_res_saved_large = gbitmap_create_with_resource(RESOURCE_ID_SAVED_LARGE);
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);

@@ -16,7 +16,6 @@ static void initialise_ui(void) {
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
-  window_set_fullscreen(s_window, false);
   
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);
   s_res_info_large = gbitmap_create_with_resource(RESOURCE_ID_INFO_LARGE);
