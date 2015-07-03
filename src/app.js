@@ -377,6 +377,11 @@ Pebble.addEventListener("appmessage",
             }
           
             dueIn = Math.round(((expected-now)/60)/1000);
+            
+            // Don't send negative values
+            if(dueIn < 0){
+              dueIn = 0;
+            }
           
             message['bus_route_'+i] = route;
             message['bus_destination_'+i] = destination;
@@ -396,7 +401,7 @@ Pebble.addEventListener('showConfiguration', function(e) {
   var message = db2go.encodeStops(stops);
   var configPage = 'http://192.168.1.7:8080/';
   
-  console.log('SHow Configuration');
+  console.log('Show Configuration');
   Pebble.openURL(configPage+'#'+message);
 });
 
