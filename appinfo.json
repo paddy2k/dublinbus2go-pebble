@@ -159,34 +159,9 @@
     "resources": {
         "media": [
             {
-                "file": "images/dublin-bus-logo-wb.png",
-                "name": "DUBLIN_BUS_LOGO",
-                "type": "png"
-            },
-            {
-                "file": "images/nearest_i.png",
-                "name": "NEAREST_ICON",
+                "file": "images/favourites_trans.png",
+                "name": "FAVOURITE_TRANS",
                 "type": "png-trans"
-            },
-            {
-                "file": "images/favourites_bw.png",
-                "name": "FAVOURITES_ICON",
-                "type": "png-trans"
-            },
-            {
-                "file": "images/removed_large.png",
-                "name": "REMOVED_LARGE",
-                "type": "png"
-            },
-            {
-                "file": "images/saved_large.png",
-                "name": "SAVED_LARGE",
-                "type": "png"
-            },
-            {
-                "file": "images/info_large.png",
-                "name": "INFO_LARGE",
-                "type": "png"
             },
             {
                 "file": "images/dublin-bus-logo-only-bw.png",
@@ -195,9 +170,34 @@
                 "type": "png"
             },
             {
-                "file": "images/favourites_trans.png",
-                "name": "FAVOURITE_TRANS",
+                "file": "images/info_large.png",
+                "name": "INFO_LARGE",
+                "type": "png"
+            },
+            {
+                "file": "images/saved_large.png",
+                "name": "SAVED_LARGE",
+                "type": "png"
+            },
+            {
+                "file": "images/removed_large.png",
+                "name": "REMOVED_LARGE",
+                "type": "png"
+            },
+            {
+                "file": "images/favourites_bw.png",
+                "name": "FAVOURITES_ICON",
                 "type": "png-trans"
+            },
+            {
+                "file": "images/nearest_i.png",
+                "name": "NEAREST_ICON",
+                "type": "png-trans"
+            },
+            {
+                "file": "images/dublin-bus-logo-wb.png",
+                "name": "DUBLIN_BUS_LOGO",
+                "type": "png"
             }
         ]
     },
