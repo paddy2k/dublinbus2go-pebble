@@ -23,20 +23,20 @@ var appMessageQueue = {
 				appMessageQueue.queue.shift();
 				appMessageQueue.working = false;
 				appMessageQueue.send();
-        console.log('AppMessage SENT: ' + JSON.stringify(this.nextMessage()));
+        console.log('AppMessage SENT: ' + JSON.stringify(appMessageQueue.nextMessage()));
 			};
 			var nack = function() {
 				appMessageQueue.numTries++;
 				appMessageQueue.working = false;
 				appMessageQueue.send();
-        console.log('AppMessage NACK: ' + JSON.stringify(this.nextMessage()));
+        console.log('AppMessage NACK: ' + JSON.stringify(appMessageQueue.nextMessage()));
 			};
-			if (this.numTries >= this.maxTries) {
-				console.log('Failed sending AppMessage: ' + JSON.stringify(this.nextMessage()));
+			if (appMessageQueue.numTries >= appMessageQueue.maxTries) {
+				console.log('Failed sending AppMessage: ' + JSON.stringify(appMessageQueue.nextMessage()));
 				ack();
 			}
-			console.log('Sending AppMessage: ' + JSON.stringify(this.nextMessage()));
-			Pebble.sendAppMessage(this.nextMessage(), ack, nack);
+			console.log('Sending AppMessage: ' + JSON.stringify(appMessageQueue.nextMessage()));
+			Pebble.sendAppMessage(appMessageQueue.nextMessage(), ack, nack);
 		}
 	}
 };
