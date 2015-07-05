@@ -33,8 +33,9 @@ var db2go = {
     xmlhttp.onreadystatechange = function () {
       if (xmlhttp.readyState == 4) {
         if (xmlhttp.status == 200) {
-          var response = xmlhttp.responseXML;
-          callback.call(this, response);
+          var responseXML = xmlhttp.responseXML;
+          var responseRaw = xmlhttp.responseText;
+          callback.call(this, responseXML,  responseRaw);
         }
       }
     }
@@ -140,7 +141,6 @@ var db2go = {
       message["stop_id_"+index] = stop.id;
       message["stop_distance_"+index] = stop.distance;
       message["stop_bearing_"+index] = stop.bearing;
-      message["stop_index_"+index] = index;
     });
 
     appMessageQueue.send(message);
@@ -193,6 +193,137 @@ var db2go = {
     });
   
     return stops;
+  },
+  parseStopAndroid: function(xml, a){
+    var maxResponse = 20;
+    var response = xml.getElementsByTagName("DocumentElement")[0];
+    var message  = {
+      "action": actions.getStop,
+      "status" : sendStatus.end
+    };
+
+    if(!response){
+      appMessageQueue.send({
+        "action": actions.getStop,
+        "status" : sendStatus.error
+      });  
+      return false;
+    }
+
+    var stops= response.childNodes;
+    var responseSize = stops.length;
+    responseSize = responseSize < maxResponse ? responseSize : maxResponse;
+
+    for (var i=0;i<responseSize;i++){
+      var route, destination, now, expected, dueIn;
+      var stop = stops[i].childNodes;
+
+      for (var j=0;j<stop.length;j++){
+        switch(stop[j].nodeName){
+          case 'MonitoredVehicleJourney_PublishedLineName': 
+            route = stop[j].textContent;
+            break;
+          case 'MonitoredVehicleJourney_DestinationName':
+            destination = stop[j].textContent.split(" via ")[0];;
+            break;
+          case 'Timestamp':
+            now = new Date(stop[j].textContent);
+            break;
+          case 'MonitoredCall_ExpectedArrivalTime':
+            expected = new Date(stop[j].textContent);
+            break;
+          case 'MonitoredStopVisit_MonitoringRef':
+            stopId = parseInt(stop[j].textContent);
+            break;
+        }
+      }
+
+      dueIn = Math.round(((expected-now)/60)/1000);
+
+      // Don't send negative values
+      if(dueIn < 0){
+        dueIn = 0;
+      }
+
+      message['bus_route_'+i] = route;
+      message['bus_destination_'+i] = destination;
+      message['bus_duein_'+i] = dueIn;
+      message['id'] = stopId;
+
+      console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
+    }
+    console.log(JSON.stringify(message));
+    appMessageQueue.send(message);
+  },
+  parseStopApple: function(text, a){
+    var maxResponse = 20, stopId, tmp;
+    var message  = {
+      "action": actions.getStop,
+      "status" : sendStatus.end
+    };
+    
+    var stops_regex = /(<StopData\s.*?<\/StopData>)/g; 
+    var route_regex = /<MonitoredVehicleJourney_PublishedLineName>(.*?)<\/MonitoredVehicleJourney_PublishedLineName>/; 
+    var destination_regex = /<MonitoredVehicleJourney_DestinationName>(.*?)<\/MonitoredVehicleJourney_DestinationName>/; 
+    var now_regex = /<Timestamp>(.*?)<\/Timestamp>/; 
+    var expected_regex = /<MonitoredCall_ExpectedArrivalTime>(.*?)<\/MonitoredCall_ExpectedArrivalTime>/; 
+    var stopid_regex = /<MonitoredStopVisit_MonitoringRef>(.*?)<\/MonitoredStopVisit_MonitoringRef>/; 
+    
+    var stops = [];
+    while ((tmp = stops_regex.exec(text)) !== null) {
+      if (tmp.index === stops_regex.lastIndex) {
+        stops_regex.lastIndex++;
+      }
+      stops.push(tmp);
+    }
+      
+    if(!stops.length){
+      appMessageQueue.send({
+        "action": actions.getStop,
+        "status" : sendStatus.error
+      });  
+      return false;
+    }
+  
+    var responseSize = stops.length;
+    responseSize = responseSize < maxResponse ? responseSize : maxResponse;
+
+    for (var i=0;i<responseSize;i++){
+      var route, destination, now, expected, dueIn;
+      var stop = stops[i];
+
+      var route_matches = route_regex.exec(stop);
+      route = route_matches[1];
+
+      var destination_matches = destination_regex.exec(stop);
+      destination = destination_matches[1].split(" via ")[0];
+    
+      var now_matches = now_regex.exec(stop);
+      now = new Date(now_matches[1]);
+    
+      var expected_matches = expected_regex.exec(stop);
+      expected = new Date(expected_matches[1]);
+      
+      var stopid_matches = stopid_regex.exec(stop);
+      stopId = parseInt(stopid_matches[1]);
+
+      dueIn = Math.round(((expected-now)/60)/1000);
+
+      // Don't send negative values
+      if(dueIn < 0){
+        dueIn = 0;
+      }
+
+      message['bus_route_'+i] = route;
+      message['bus_destination_'+i] = destination;
+      message['bus_duein_'+i] = dueIn;
+      message['id'] = stopId;
+
+      console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
+    }
+    
+    console.log(JSON.stringify(message));
+    appMessageQueue.send(message);
   }
 };
 
@@ -335,62 +466,13 @@ Pebble.addEventListener("appmessage",
 //         return;
 //         // END DEBUG
         
-        db2go.getStop(stopId, function(xml, a){
-          var maxResponse = 20;
-          var response = xml.getElementsByTagName("DocumentElement")[0];
-          var message  = {
-              "action": actions.getStop,
-              "status" : sendStatus.end,
-              "id" : ""+stopId+""
-            };
-
-          if(!response){
-            appMessageQueue.send({
-              "action": actions.getStop,
-              "status" : sendStatus.error
-            });  
-            return false;
+        db2go.getStop(stopId, function(xml, text, a){
+          if(!xml){
+            db2go.parseStopApple(text, a);  
           }
-          
-          var stops= response.childNodes;
-          var responseSize = stops.length;
-          responseSize = responseSize < maxResponse ? responseSize : maxResponse;
-          
-          for (var i=0;i<responseSize;i++){
-            var route, destination, now, expected, dueIn;
-            var stop = stops[i].childNodes;
-
-            for (var j=0;j<stop.length;j++){
-              switch(stop[j].nodeName){
-                case 'MonitoredVehicleJourney_PublishedLineName': 
-                  route = stop[j].textContent;
-                  break;
-                case 'MonitoredVehicleJourney_DestinationName':
-                  destination = stop[j].textContent.split(" via ")[0];;
-                  break;
-                case 'Timestamp':
-                  now = new Date(stop[j].textContent);
-                  break;
-                case 'MonitoredCall_ExpectedArrivalTime':
-                  expected = new Date(stop[j].textContent);
-              }
-            }
-          
-            dueIn = Math.round(((expected-now)/60)/1000);
-            
-            // Don't send negative values
-            if(dueIn < 0){
-              dueIn = 0;
-            }
-          
-            message['bus_route_'+i] = route;
-            message['bus_destination_'+i] = destination;
-            message['bus_duein_'+i] = dueIn;
-          
-            console.log(route +' '+ destination + ' - ' + dueIn + ' mins');
+          else{
+            db2go.parseStopAndroid(xml, a);
           }
-          console.log(JSON.stringify(message));
-          appMessageQueue.send(message);
         });
         break;
     }
