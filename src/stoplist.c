@@ -40,7 +40,7 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 }
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-  graphics_context_set_text_color(ctx, GColorWhite); // This is important.
+  graphics_context_set_text_color(ctx, GColorBlack); // This is important.
   switch(stop_list_type){
     case 0: 
       menu_cell_basic_header_draw(ctx, cell_layer, "Saved Stops");
