@@ -164,7 +164,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
               }  
             }
           
-            show_stop(stop_id->value->cstring);
+            show_stop((int)stop_id->value->uint32);
             hide_loading();
           
             stop_id = NULL;

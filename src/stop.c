@@ -165,9 +165,9 @@ static void handle_window_unload(Window* window) {
    destroy_ui();
 }
 
-void show_stop(char *id) {
-  snprintf(stop_id, sizeof stop_id, "%s", id);
-  
+void show_stop(int id) {
+  snprintf(stop_id, sizeof stop_id, "%d", id);
+    
   initialise_ui();
   window_set_window_handlers(s_window, (WindowHandlers) {
     .unload = handle_window_unload,
