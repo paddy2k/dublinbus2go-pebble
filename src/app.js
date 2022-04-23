@@ -22,7 +22,7 @@ var sendStatus = {
 
 var db2go = {
   stopDetailsUrl: 'http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx?op=GetRealTimeStopData',
-  geoLookupUrl: 'http://dublinbus.ie/Templates/Public/RoutePlannerService/RTPIMapHandler.ashx?zoom=13&czoom=16&rjson=true',
+  geoLookupUrl: 'https://dublinbus.ie/Templates/Public/RoutePlannerService/RTPIMapHandler.ashx?zoom=13&czoom=16&rjson=true',
   
   getXML : function (url, data, callback) {
     var xmlhttp = new XMLHttpRequest();
