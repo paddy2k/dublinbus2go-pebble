@@ -5,5 +5,5 @@ typedef struct Stop {
     char *bearing;
 } Stop;
 
-Stop *stop_create(const char *name, int id, const char *distance, const char *bearing);
+Stop *stop_create(const char *name, const char *id, const char *distance, const char *bearing);
 void stop_destroy(Stop *stop);

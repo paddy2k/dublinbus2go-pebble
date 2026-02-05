@@ -10,7 +10,7 @@
 #define NUM_MENU_SECTIONS 1
 #define NUM_MENU_ITEMS 5
 #define NUM_STOPS_IN_LIST 20
-  
+
 static Window *s_window;
 static MenuLayer *s_menulayer_1;
 
@@ -28,10 +28,10 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
   int stopsSize = sizeof stops / sizeof stops[0];
   for(int i = 0; i<stopsSize; i++){
     if(stops[i]){
-     rows++; 
-    }  
+     rows++;
+    }
   }
-  
+
   return rows;
 }
 
@@ -42,10 +42,10 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
   graphics_context_set_text_color(ctx, GColorBlack); // This is important.
   switch(stop_list_type){
-    case 0: 
+    case 0:
       menu_cell_basic_header_draw(ctx, cell_layer, "Saved Stops");
       break;
-    default: 
+    default:
       menu_cell_basic_header_draw(ctx, cell_layer, "Nearest Stops");
       break;
   }
@@ -54,11 +54,11 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
   if(stops[cell_index->row]){
     Stop *stop = stops[cell_index->row];
-    stop_list[cell_index->row] = atoi(stop->id);
     char buffer[20] = "                ";
     int bufferSize = 24;
     bufferSize = bufferSize - strlen(stop->distance);
-    bufferSize = bufferSize - strlen(stop->id);
+    // bufferSize = bufferSize - strlen(stop->id);
+    bufferSize = bufferSize - 2;
     switch(bufferSize){
       case 8:
         snprintf(buffer, sizeof buffer, "%s", "  ");
@@ -94,10 +94,10 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
         snprintf(buffer, sizeof buffer, "%s", "                ");
         break;
     }
-    
+
     char bottom[256];
-    snprintf(bottom, sizeof bottom, "#%s%s%s %s", stop->id, buffer, stop->distance, stop->bearing);
-  
+    snprintf(bottom, sizeof bottom, "#%s%s%s %s", stop->id + strlen(stop->id) - 4, buffer, stop->distance, stop->bearing);
+
     menu_cell_basic_draw(ctx, cell_layer, stop->name, bottom, NULL);
   }
 }
@@ -106,7 +106,7 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   Stop *stop = stops[cell_index->row];
   set_stop_name(stop->name);
   getStop(stop->id);
-  show_loading();  
+  show_loading();
 }
 
 static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
@@ -128,17 +128,19 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
 
 static void initialise_ui(void) {
   GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
-  
+
   s_window = window_create();
+  if (!s_window) return;
   window_set_background_color(s_window, backgroundColour);
-  
-  
+
+
   GRect bounds = layer_get_bounds(window_get_root_layer(s_window));
-  
+
   GRect menuSize = GRect(0, 0, bounds.size.w, bounds.size.h);
-    
+
   s_menulayer_1 = menu_layer_create(menuSize);
-  
+  if (!s_menulayer_1) return;
+
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
     .get_num_rows = menu_get_num_rows_callback,
@@ -148,28 +150,27 @@ static void initialise_ui(void) {
     .select_click = menu_select_callback,
     .select_long_click = menu_select_long_callback,
   });
-  
+
   #ifdef PBL_SDK_3
   menu_layer_set_normal_colors(s_menulayer_1, GColorYellow, GColorBlack);
   menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
   #endif
-  
+
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
-  
+
   stoplist_type = stop_list_type;
 }
 
-static void destroy_ui(void) {  
+static void destroy_ui(void) {
   int stopsSize = sizeof stops / sizeof stops[0];
   for(int i = 0; i<stopsSize; i++){
     if(stops[i]){
       stop_destroy(stops[i]);
       stops[i] = NULL;
-      free(stops[i]);
     }
   }
-  
+
   window_destroy(s_window);
   menu_layer_destroy(s_menulayer_1);
 }
@@ -180,20 +181,33 @@ static void handle_window_unload(Window* window) {
 }
 
 void show_stoplist(void) {
+  if (s_window) {
+    window_stack_remove(s_window, false);
+  }
+
   initialise_ui();
-  window_set_window_handlers(s_window, (WindowHandlers) {
-    .unload = handle_window_unload,
-  });
-  window_stack_push(s_window, true);
+  if (s_window) {
+    window_set_window_handlers(s_window, (WindowHandlers) {
+      .unload = handle_window_unload,
+    });
+    window_stack_push(s_window, true);
+  }
 }
 
 void hide_stoplist(void) {
-  window_stack_remove(s_window, true);
+  if (s_window) {
+    window_stack_remove(s_window, true);
+  }
 }
 
-void stoplist_add_stop(int index, const char *name, int id, const char *distance, const char *bearing){
+void stoplist_add_stop(int index, const char *name, const char *id, const char *distance, const char *bearing){
+  if (index < 0 || index >= NUM_STOPS_IN_LIST) return;
+  if (stops[index]) {
+    stop_destroy(stops[index]);
+    stops[index] = NULL;
+  }
   Stop *stop = stop_create(
-    name, 
+    name,
     id,
     distance,
     bearing

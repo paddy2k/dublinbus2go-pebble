@@ -17,42 +17,29 @@ static ScrollLayer *s_scroll_layer;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_bar;
 #endif 
-#ifdef PBL_BW
-static InverterLayer *s_inverterlayer_1;
-#endif
 
 static Bus *buses[NUM_BUSES_IN_LIST] = {};
 static BusLayer *bus_layers[NUM_BUSES_IN_LIST] = {};
 
-char stop_id[6];
-char stop_name[20];
+char stop_id[16];
+char stop_name[64];
 int stoplist_type = 0;
 
 static void destroy_ui(void) {
   window_destroy(s_window);
   s_window = NULL;
-  free(s_window);
 
   text_layer_destroy(s_headerlayer_1);
   s_headerlayer_1 = NULL;
-  free(s_headerlayer_1);
   text_layer_destroy(s_headerlayer_2);
   s_headerlayer_2 = NULL;
-  free(s_headerlayer_2);
   scroll_layer_destroy(s_scroll_layer);
   s_scroll_layer = NULL;
-  free(s_scroll_layer);
   s_res_gothic_18 = NULL;
-  free(s_res_gothic_18);
   s_res_gothic_18_bold = NULL;
-  free(s_res_gothic_18_bold);
   
   #ifdef PBL_SDK_3
   status_bar_layer_destroy(s_status_bar);
-  #endif
-  
-  #ifdef PBL_BW
-  inverter_layer_destroy(s_inverterlayer_1);
   #endif
     
     
@@ -61,7 +48,6 @@ static void destroy_ui(void) {
     if(buses[i]){
       bus_destroy(buses[i]);
       buses[i] = NULL;
-      free(buses[i]);
     }
   }
 //   free(buses);
@@ -71,7 +57,6 @@ static void destroy_ui(void) {
     if(bus_layers[i]){
       bus_layer_destroy(bus_layers[i]);
       bus_layers[i] = NULL;
-      free(bus_layers[i]);
     }
   }
 //   free(bus_layers);
@@ -88,6 +73,8 @@ void tap_handler(AccelAxisType axis, int32_t direction)
 
 static void initialise_ui() {
   s_window = window_create();
+  if (!s_window) return;
+
   GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
   window_set_background_color(s_window, backgroundColour);
   
@@ -97,6 +84,7 @@ static void initialise_ui() {
   #endif
 
   s_scroll_layer = scroll_layer_create(bounds);
+  if (!s_scroll_layer) return;
   scroll_layer_set_click_config_onto_window(s_scroll_layer, s_window);
   
   s_res_gothic_18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
@@ -109,11 +97,13 @@ static void initialise_ui() {
   headerSize = GRect(0, STATUS_BAR_LAYER_HEIGHT,  144, 24);
   #endif
   s_headerlayer_1 = text_layer_create(headerSize);
-  text_layer_set_text(s_headerlayer_1, "                                       Due");
-  text_layer_set_background_color(s_headerlayer_1, GColorBlack);
-  text_layer_set_font(s_headerlayer_1, s_res_gothic_18);
-  text_layer_set_text_color(s_headerlayer_1, GColorWhite);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_1);
+  if (s_headerlayer_1) {
+    text_layer_set_text(s_headerlayer_1, "                                       Due");
+    text_layer_set_background_color(s_headerlayer_1, GColorBlack);
+    text_layer_set_font(s_headerlayer_1, s_res_gothic_18);
+    text_layer_set_text_color(s_headerlayer_1, GColorWhite);
+    layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_1);
+  }
   
   // s_headerlayer_2
   GRect headerSizeTwo = GRect(2, 0, 100, 24);
@@ -121,20 +111,28 @@ static void initialise_ui() {
   headerSizeTwo = GRect(2, STATUS_BAR_LAYER_HEIGHT,  100, 24);
   #endif
   s_headerlayer_2 = text_layer_create(headerSizeTwo);
-  text_layer_set_background_color(s_headerlayer_2, GColorClear);
-  text_layer_set_text_color(s_headerlayer_2, GColorWhite);
-  text_layer_set_text(s_headerlayer_2, stop_name);
-  text_layer_set_font(s_headerlayer_2, s_res_gothic_18_bold);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_2);
+  if (s_headerlayer_2) {
+    text_layer_set_background_color(s_headerlayer_2, GColorClear);
+    text_layer_set_text_color(s_headerlayer_2, GColorWhite);
+    text_layer_set_text(s_headerlayer_2, stop_name);
+    text_layer_set_font(s_headerlayer_2, s_res_gothic_18_bold);
+    layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_2);
+  }
   
   int rows = 0;
   int busesSize = sizeof buses / sizeof buses[0];
   for(int i = 0; i< busesSize; i++){
+    if (bus_layers[i]) {
+      bus_layer_destroy(bus_layers[i]);
+      bus_layers[i] = NULL;
+    }
     if(buses[i]){
       bus_layers[i] = bus_layer_create(GRect(0, (24 * i), 0, 0));
-      bus_layer_set_bus(bus_layers[i], buses[i]);
-      scroll_layer_add_child(s_scroll_layer, bus_layer_get_layer(bus_layers[i]));
-      rows++;
+      if (bus_layers[i]) {
+        bus_layer_set_bus(bus_layers[i], buses[i]);
+        scroll_layer_add_child(s_scroll_layer, bus_layer_get_layer(bus_layers[i]));
+        rows++;
+      }
     }
   }
   
@@ -144,17 +142,11 @@ static void initialise_ui() {
   #ifdef PBL_SDK_3
   // Set up the status bar last to ensure it is on top of other Layers
   s_status_bar = status_bar_layer_create();  
-  status_bar_layer_set_colors(s_status_bar, GColorBlack, GColorWhite);
-  layer_add_child(window_get_root_layer(s_window), status_bar_layer_get_layer(s_status_bar));
+  if (s_status_bar) {
+    status_bar_layer_set_colors(s_status_bar, GColorBlack, GColorWhite);
+    layer_add_child(window_get_root_layer(s_window), status_bar_layer_get_layer(s_status_bar));
+  }
   #endif
-  
-  #ifdef PBL_PLATFORM_APLITE
-  GRect window_bounds = layer_get_bounds(window_get_root_layer(s_window));
-  GRect inverterSize = GRect(0, 0, window_bounds.size.w, window_bounds.size.h);
-  // s_inverterlayer_2
-  s_inverterlayer_1 = inverter_layer_create(inverterSize);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
-  #endif 
     
   accel_tap_service_subscribe(tap_handler);
 }
@@ -165,21 +157,35 @@ static void handle_window_unload(Window* window) {
    destroy_ui();
 }
 
-void show_stop(int id) {
-  snprintf(stop_id, sizeof stop_id, "%d", id);
+void show_stop(const char *id) {
+  strncpy(stop_id, id, sizeof(stop_id) - 1);
+  stop_id[sizeof(stop_id) - 1] = '\0';
     
+  if (s_window) {
+    window_stack_remove(s_window, false);
+  }
+
   initialise_ui();
-  window_set_window_handlers(s_window, (WindowHandlers) {
-    .unload = handle_window_unload,
-  });
-  window_stack_push(s_window, true);
+  if (s_window) {
+    window_set_window_handlers(s_window, (WindowHandlers) {
+      .unload = handle_window_unload,
+    });
+    window_stack_push(s_window, true);
+  }
 }
 
 void hide_stop(void) {
-  window_stack_remove(s_window, true);
+  if (s_window) {
+    window_stack_remove(s_window, true);
+  }
 }
 
 void stop_add_bus(int index, const char *route, const char *destination, int dueIn){
+  if (index < 0 || index >= NUM_BUSES_IN_LIST) return;
+  if (buses[index]) {
+    bus_destroy(buses[index]);
+    buses[index] = NULL;
+  }
   buses[index] = bus_create(
     route, 
     destination,

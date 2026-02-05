@@ -14,11 +14,6 @@ static GBitmap *s_menu_icons[NUM_MENU_ITEMS];
 static BitmapLayer *s_bitmaplayer_1;
 static MenuLayer *s_menulayer_1;
 
-#ifdef PBL_BW
-static InverterLayer *s_inverterlayer_1;
-static InverterLayer *s_inverterlayer_2;
-#endif
-
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
   return NUM_MENU_SECTIONS;
 }
@@ -70,12 +65,6 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
   #ifdef PBL_SDK_3
   menuSize = GRect(0, 80, 144, 115);
   #endif
-  
-  #ifdef PBL_PLATFORM_APLITE
-  // s_inverterlayer_1
-  s_inverterlayer_1 = inverter_layer_create(menuSize);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_1);
-  #endif
     
   s_menulayer_1 = menu_layer_create(menuSize);
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
@@ -92,12 +81,6 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
   #endif
   
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
-
-  #ifdef PBL_PLATFORM_APLITE
-  // s_inverterlayer_2
-  s_inverterlayer_2 = inverter_layer_create(menuSize);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_inverterlayer_2);
-  #endif  
   
   //Free the memory used by the Animation
   property_animation_destroy((PropertyAnimation*) anim);
@@ -148,11 +131,6 @@ static void destroy_ui(void) {
   bitmap_layer_destroy(s_bitmaplayer_1);
   menu_layer_destroy(s_menulayer_1);
   gbitmap_destroy(s_res_dublin_bus_logo);
-  
-  #ifdef PBL_BW
-  inverter_layer_destroy(s_inverterlayer_1);
-  inverter_layer_destroy(s_inverterlayer_2);
-  #endif
   
   for ( int i=0; i<NUM_MENU_ITEMS; i++ ) {
     gbitmap_destroy( s_menu_icons[i] );
