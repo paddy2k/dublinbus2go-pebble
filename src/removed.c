@@ -18,7 +18,7 @@ static void click_config_provider(void *context) {
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
   GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
   
   s_window = window_create();
@@ -46,6 +46,7 @@ static void initialise_ui(void) {
 
 static void destroy_ui(void) {
   window_destroy(s_window);
+  s_window = NULL;
   text_layer_destroy(s_textlayer_1);
   bitmap_layer_destroy(s_bitmaplayer_1);
   gbitmap_destroy(s_res_removed_large);
@@ -65,5 +66,7 @@ void show_removed(void) {
 }
 
 void hide_removed(void) {
-  window_stack_remove(s_window, true);
+  if (s_window) {
+    window_stack_remove(s_window, true);
+  }
 }

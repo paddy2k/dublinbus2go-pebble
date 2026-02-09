@@ -222,6 +222,9 @@ var actions = {
   saveStop: 4,
   removeStop: 5,
   showUi: 6,
+  getNearestBus: 7,
+  getNearestTrain: 8,
+  getNearestTram: 9,
 };
 
 var sendStatus = {
@@ -671,6 +674,45 @@ Pebble.addEventListener("appmessage", function (e) {
             localStorage.setItem("stopsCache", JSON.stringify(stops));
           }, 0);
         }, "bus");
+      });
+      break;
+
+    case actions.getNearestBus:
+      console.log("Get Nearest Bus: Start");
+      db2goLocation.get(function () {
+        db2go.getStops(function (stops) {
+          window["stops"] = stops;
+          db2go.listStops(stops);
+          setTimeout(function () {
+            localStorage.setItem("stopsCache", JSON.stringify(stops));
+          }, 0);
+        }, "bus");
+      });
+      break;
+
+    case actions.getNearestTrain:
+      console.log("Get Nearest Train: Start");
+      db2goLocation.get(function () {
+        db2go.getStops(function (stops) {
+          window["stops"] = stops;
+          db2go.listStops(stops);
+          setTimeout(function () {
+            localStorage.setItem("stopsCache", JSON.stringify(stops));
+          }, 0);
+        }, "train");
+      });
+      break;
+
+    case actions.getNearestTram:
+      console.log("Get Nearest Tram: Start");
+      db2goLocation.get(function () {
+        db2go.getStops(function (stops) {
+          window["stops"] = stops;
+          db2go.listStops(stops);
+          setTimeout(function () {
+            localStorage.setItem("stopsCache", JSON.stringify(stops));
+          }, 0);
+        }, "luas");
       });
       break;
 

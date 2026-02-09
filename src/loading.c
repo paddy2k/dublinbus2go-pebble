@@ -44,7 +44,7 @@ void tick_handler(void *data){
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
   GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
   GFont s_res_gothic_24 = fonts_get_system_font(FONT_KEY_GOTHIC_24);
   

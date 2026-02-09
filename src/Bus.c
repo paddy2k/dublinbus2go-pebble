@@ -1,9 +1,14 @@
 #include <pebble.h>
 #include "Bus.h"
+#include "stoplist.h"
 
 Bus *bus_create(const char *route, const char *destination, int dueIn)
 {
     if (!route || !destination) return NULL;
+
+    if (stop_list_type == 2 || stop_list_type == 3) {
+        route = "";
+    }
 
     char dueIn_str[16];
     snprintf(dueIn_str, sizeof(dueIn_str), "%d", dueIn);

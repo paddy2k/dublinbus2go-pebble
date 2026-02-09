@@ -39,7 +39,10 @@ enum {
   ACTION_GETSTOPS = 3,
   ACTION_SAVE_STOP = 4,
   ACTION_REMOVE_STOP = 5,
-  ACTION_SHOW_UI = 6
+  ACTION_SHOW_UI = 6,
+  ACTION_GET_NEAREST_BUS = 7,
+  ACTION_GET_NEAREST_TRAIN = 8,
+  ACTION_GET_NEAREST_TRAM = 9
 };
 
 char *translate_error(AppMessageResult result) {
@@ -276,6 +279,42 @@ void getNearestStops(void){
     app_message_outbox_send();
   } else {
     APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox begin failed (getNearestStops): %s", translate_error(result));
+  }
+}
+
+void getNearestBus(void){
+  DictionaryIterator *iter;
+ 	AppMessageResult result = app_message_outbox_begin(&iter);
+  if (result == APP_MSG_OK) {
+    dict_write_int16(iter, ACTION_KEY, ACTION_GET_NEAREST_BUS);
+    dict_write_end(iter);
+    app_message_outbox_send();
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox begin failed (getNearestBus): %s", translate_error(result));
+  }
+}
+
+void getNearestTrain(void){
+  DictionaryIterator *iter;
+ 	AppMessageResult result = app_message_outbox_begin(&iter);
+  if (result == APP_MSG_OK) {
+    dict_write_int16(iter, ACTION_KEY, ACTION_GET_NEAREST_TRAIN);
+    dict_write_end(iter);
+    app_message_outbox_send();
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox begin failed (getNearestTrain): %s", translate_error(result));
+  }
+}
+
+void getNearestTram(void){
+  DictionaryIterator *iter;
+ 	AppMessageResult result = app_message_outbox_begin(&iter);
+  if (result == APP_MSG_OK) {
+    dict_write_int16(iter, ACTION_KEY, ACTION_GET_NEAREST_TRAM);
+    dict_write_end(iter);
+    app_message_outbox_send();
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox begin failed (getNearestTram): %s", translate_error(result));
   }
 }
 

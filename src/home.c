@@ -5,7 +5,7 @@
 #include <pebble.h>
 
 #define NUM_MENU_SECTIONS 1
-#define NUM_MENU_ITEMS 2
+#define NUM_MENU_ITEMS 4
 
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
 static Window *s_window;
@@ -32,11 +32,18 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
     case 0:
       switch (cell_index->row) {
         case 0:
-          menu_cell_basic_draw(ctx, cell_layer, "Saved Stops", NULL, s_menu_icons[0]);
+          menu_cell_basic_draw(ctx, cell_layer, "Favourites", NULL, s_menu_icons[0]);
           break;
         case 1:
-          menu_cell_basic_draw(ctx, cell_layer, "Nearest", NULL, s_menu_icons[1]);
+          menu_cell_basic_draw(ctx, cell_layer, "Bus", NULL, s_menu_icons[1]);
           break;
+        case 3:
+            menu_cell_basic_draw(ctx, cell_layer, "Luas", NULL, s_menu_icons[3]);
+            break;
+        case 2:
+          menu_cell_basic_draw(ctx, cell_layer, "Train", NULL, s_menu_icons[2]);
+          break;
+
       }
       break;
   }
@@ -53,19 +60,27 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
       break;
     case 1:
        show_loading();
-       getNearestStops();
+       getNearestBus();
+      break;
+    case 2:
+       show_loading();
+       getNearestTrain();
+      break;
+    case 3:
+       show_loading();
+       getNearestTram();
       break;
   }
 }
 
 void on_animation_stopped(Animation *anim, bool finished, void *context)
-{    
+{
   // s_menulayer_1
   GRect menuSize = GRect(0, 63, 144, 90);
   #ifdef PBL_SDK_3
   menuSize = GRect(0, 80, 144, 115);
   #endif
-    
+
   s_menulayer_1 = menu_layer_create(menuSize);
   menu_layer_set_callbacks(s_menulayer_1, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
@@ -74,49 +89,51 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
     .select_click = menu_select_callback,
   });
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
-  
+
   #ifdef PBL_COLOR
-  menu_layer_set_normal_colors(s_menulayer_1, GColorYellow, GColorBlack);
+  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00B173), GColorBlack);
   menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
   #endif
-  
+
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
-  
+
   //Free the memory used by the Animation
   property_animation_destroy((PropertyAnimation*) anim);
 }
- 
+
 void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int delay)
 {
     //Declare animation
     PropertyAnimation *anim = property_animation_create_layer_frame(layer, start, finish);
- 
+
     //Set characteristics
     animation_set_duration((Animation*) anim, duration);
     animation_set_delay((Animation*) anim, delay);
- 
+
     //Set stopped handler to free memory
     AnimationHandlers handlers = {
         //The reference to the stopped handler is the only one in the array
         .stopped = (AnimationStoppedHandler) on_animation_stopped
     };
     animation_set_handlers((Animation*) anim, handlers, NULL);
- 
+
     //Start animation!
     animation_schedule((Animation*) anim);
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
-  
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
+
   s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON_BLACK);
   s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
-  
+  s_menu_icons[2] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
+  s_menu_icons[3] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
+
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
-  
+
   s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
-  
+
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 50, 136, 40));
   #ifdef PBL_SDK_3
@@ -131,7 +148,7 @@ static void destroy_ui(void) {
   bitmap_layer_destroy(s_bitmaplayer_1);
   menu_layer_destroy(s_menulayer_1);
   gbitmap_destroy(s_res_dublin_bus_logo);
-  
+
   for ( int i=0; i<NUM_MENU_ITEMS; i++ ) {
     gbitmap_destroy( s_menu_icons[i] );
   }
@@ -161,7 +178,7 @@ void show_ui(void){
   start = GRect(4, 60, 136, 40);
   finish = GRect(4, 22, 136, 40);
   #endif
-  
-  
+
+
   animate_layer(bitmap_layer_get_layer(s_bitmaplayer_1), &start, &finish, 300, 0);
 }

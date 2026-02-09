@@ -18,7 +18,7 @@
 #define BUS_LAYER_HEIGHT 26
 #define ROUTE_TEXT_LAYER_FRAME GRect(2, 0, 24, 22)
 #define DESTINATION_TEXT_LAYER_FRAME GRect(27, 0, 90, 22)
-#define DUE_TEXT_LAYER_FRAME GRect(121, 0, 18, 22)
+#define DUE_TEXT_LAYER_FRAME GRect(117, 0, 25, 22)
 #define FOOTER_TEXT_LAYER_FRAME GRect(0, 18, 144, 8)
 
 BusLayer *bus_layer_create(GRect frame)
@@ -151,6 +151,12 @@ void bus_layer_destroy(BusLayer *bus_layer)
 
 void bus_layer_set_bus(BusLayer *bus_layer, Bus *bus)
 {
+  if (strlen(bus->route) == 0) {
+    layer_set_frame(text_layer_get_layer(bus_layer->destination_text_layer), GRect(2, 0, 115, 22));
+  } else {
+    layer_set_frame(text_layer_get_layer(bus_layer->destination_text_layer), DESTINATION_TEXT_LAYER_FRAME);
+  }
+
   text_layer_set_text(
     bus_layer->route_text_layer,
     bus->route

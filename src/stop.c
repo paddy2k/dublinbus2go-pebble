@@ -67,7 +67,7 @@ static void initialise_ui() {
   s_window = window_create();
   if (!s_window) return;
 
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorWhite);
   window_set_background_color(s_window, backgroundColour);
   
   GRect bounds = GRect(0, 24, 144, 130);

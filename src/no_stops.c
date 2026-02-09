@@ -11,7 +11,7 @@ static TextLayer *s_textlayer_2;
 static BitmapLayer *s_bitmaplayer_1;
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorBlack);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
   GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
   
   s_window = window_create();

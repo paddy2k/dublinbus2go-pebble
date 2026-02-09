@@ -119,6 +119,8 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
       hide_stoplist();
       break;
     case 1:
+    case 2:
+    case 3:
       saveStop(stop->id);
       show_saved();
       break;
@@ -127,7 +129,7 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
 
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorYellow, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorWhite);
 
   s_window = window_create();
   if (!s_window) return;
@@ -152,7 +154,7 @@ static void initialise_ui(void) {
   });
 
   #ifdef PBL_SDK_3
-  menu_layer_set_normal_colors(s_menulayer_1, GColorYellow, GColorBlack);
+  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00B173), GColorBlack);
   menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
   #endif
 
