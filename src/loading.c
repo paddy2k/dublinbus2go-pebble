@@ -27,14 +27,16 @@ void tick_handler(void *data){
     return;
   }
 
-  const char *dots = text_layer_get_text(s_textlayer_1);
-  if (dots) {
-    if(!strcmp(dots, "..")){
-      text_layer_set_text(s_textlayer_1, "...");
-    } else if(!strcmp(dots, ".")){
-      text_layer_set_text(s_textlayer_1, "..");
-    } else {
-      text_layer_set_text(s_textlayer_1, ".");
+  if (s_textlayer_1) {
+    const char *dots = text_layer_get_text(s_textlayer_1);
+    if (dots) {
+      if(!strcmp(dots, "..")){
+        text_layer_set_text(s_textlayer_1, "...");
+      } else if(!strcmp(dots, ".")){
+        text_layer_set_text(s_textlayer_1, "..");
+      } else {
+        text_layer_set_text(s_textlayer_1, ".");
+      }
     }
   }
                
@@ -109,7 +111,13 @@ static void handle_window_unload(Window* window) {
 }
 
 void remove_loading_window(void){
-  window_stack_remove(s_window, false);
+  if (timer) {
+    app_timer_cancel(timer);
+    timer = NULL;
+  }
+  if (s_window) {
+    window_stack_remove(s_window, false);
+  }
 }
 
 void show_loading(void) {
@@ -121,5 +129,11 @@ void show_loading(void) {
 }
 
 void hide_loading(void) {
-  window_stack_remove(s_window, true);
+  if (timer) {
+    app_timer_cancel(timer);
+    timer = NULL;
+  }
+  if (s_window) {
+    window_stack_remove(s_window, true);
+  }
 }

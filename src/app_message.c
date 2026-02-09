@@ -102,6 +102,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             break;
           case STATUS_END:
             if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");}
+            stoplist_clear_all();
             
             for(int i = 0; i<20; i++){
               int stopNameId = 2000+i;
@@ -153,6 +154,7 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             break;
           case STATUS_END:
             if(debug){APP_LOG(APP_LOG_LEVEL_DEBUG, "STATUS: END");}
+            stop_clear_all();
             Tuple *stop_id = dict_find(received, ID_KEY);
             
             if (!stop_id) {

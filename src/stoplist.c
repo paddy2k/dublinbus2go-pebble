@@ -162,17 +162,11 @@ static void initialise_ui(void) {
   stoplist_type = stop_list_type;
 }
 
-static void destroy_ui(void) {
-  int stopsSize = sizeof stops / sizeof stops[0];
-  for(int i = 0; i<stopsSize; i++){
-    if(stops[i]){
-      stop_destroy(stops[i]);
-      stops[i] = NULL;
-    }
-  }
-
+static void destroy_ui(void) {  
   window_destroy(s_window);
+  s_window = NULL;
   menu_layer_destroy(s_menulayer_1);
+  s_menulayer_1 = NULL;
 }
 // END AUTO-GENERATED UI CODE
 
@@ -180,9 +174,27 @@ static void handle_window_unload(Window* window) {
   destroy_ui();
 }
 
+void stoplist_clear_all(void) {
+  for(int i = 0; i < NUM_STOPS_IN_LIST; i++){
+    if(stops[i]){
+      stop_destroy(stops[i]);
+      stops[i] = NULL;
+    }
+  }
+}
+
 void show_stoplist(void) {
+  if (s_window && window_stack_contains_window(s_window)) {
+    if (s_menulayer_1) {
+      menu_layer_reload_data(s_menulayer_1);
+    }
+    return;
+  }
+
   if (s_window) {
-    window_stack_remove(s_window, false);
+    // If window exists but not on stack, something is wrong. Destroy it.
+    window_destroy(s_window);
+    s_window = NULL;
   }
 
   initialise_ui();
@@ -207,7 +219,7 @@ void stoplist_add_stop(int index, const char *name, const char *id, const char *
     stops[index] = NULL;
   }
   Stop *stop = stop_create(
-    name,
+    name, 
     id,
     distance,
     bearing

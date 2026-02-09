@@ -1,5 +1,6 @@
 void show_stop(const char *id);
 void hide_stop(void);
+void stop_clear_all(void);
 void stop_add_bus(int index, const char *route, const char *destination, int dueIn);
 extern int stoplist_type;
 void set_stop_name(const char *name);

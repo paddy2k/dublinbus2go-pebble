@@ -200,9 +200,9 @@
   },
   "sdkVersion": "3",
   "shortName": "Dublin Bus",
-  "targetPlatforms": ["aplite", "basalt"],
+  "targetPlatforms": ["aplite", "basalt", "chalk", "diorite", "emery", "flint"],
   "uuid": "5094f98c-7087-42de-aa2e-081c6f11c346",
-  "versionLabel": "1.16",
+  "versionLabel": "2.00",
   "watchapp": {
     "watchface": false
   }

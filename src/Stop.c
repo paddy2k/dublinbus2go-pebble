@@ -3,40 +3,41 @@
 
 Stop *stop_create(const char *name, const char *id, const char *distance, const char *bearing)
 {
-    Stop *stop = malloc(sizeof(Stop));
+    if (!name || !id || !distance || !bearing) return NULL;
+
+    int name_len = strlen(name);
+    int id_len = strlen(id);
+    int dist_len = strlen(distance);
+    int bear_len = strlen(bearing);
+
+    // Single allocation for the struct and all its strings
+    int total_size = sizeof(Stop) + name_len + id_len + dist_len + bear_len + 4;
+    Stop *stop = malloc(total_size);
     if (!stop) return NULL;
-    
-    int name_size = strlen(name) + 1;    
-    stop->name = malloc(sizeof(char) * name_size);
-    if (!stop->name) { free(stop); return NULL; }
-    strncpy(stop->name, name, name_size);
-    
-    int id_size = strlen(id) + 1;
-    stop->id = malloc(sizeof(char) * id_size);
-    if (!stop->id) { free(stop->name); free(stop); return NULL; }
-    strncpy(stop->id, id, id_size);
 
-    int distance_size = strlen(distance) + 1;
-    stop->distance = malloc(sizeof(char) * distance_size);
-    if (!stop->distance) { free(stop->id); free(stop->name); free(stop); return NULL; }
-    strncpy(stop->distance, distance, distance_size);
+    char *ptr = (char *)(stop + 1);
 
-    int bearing_size = strlen(bearing) + 1;    
-    stop->bearing = malloc(sizeof(char) * bearing_size);
-    if (!stop->bearing) { free(stop->distance); free(stop->id); free(stop->name); free(stop); return NULL; }
-    strncpy(stop->bearing, bearing, bearing_size);
+    stop->name = ptr;
+    strcpy(stop->name, name);
+    ptr += name_len + 1;
+
+    stop->id = ptr;
+    strcpy(stop->id, id);
+    ptr += id_len + 1;
+
+    stop->distance = ptr;
+    strcpy(stop->distance, distance);
+    ptr += dist_len + 1;
+
+    stop->bearing = ptr;
+    strcpy(stop->bearing, bearing);
 
     return stop;
 }
 
 void stop_destroy(Stop *stop)
 {
-    if (!stop) {
-        return;
+    if (stop) {
+        free(stop);
     }
-    if (stop->name) free(stop->name);
-    if (stop->id) free(stop->id);
-    if (stop->distance) free(stop->distance);
-    if (stop->bearing) free(stop->bearing);
-    free(stop);
 }

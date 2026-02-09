@@ -39,18 +39,11 @@ static void destroy_ui(void) {
   s_res_gothic_18_bold = NULL;
   
   #ifdef PBL_SDK_3
-  status_bar_layer_destroy(s_status_bar);
-  #endif
-    
-    
-  int busesSize = sizeof buses / sizeof buses[0];
-  for(int i = 0; i<busesSize; i++){
-    if(buses[i]){
-      bus_destroy(buses[i]);
-      buses[i] = NULL;
-    }
+  if (s_status_bar) {
+    status_bar_layer_destroy(s_status_bar);
+    s_status_bar = NULL;
   }
-//   free(buses);
+  #endif
   
   int busLayersSize = sizeof bus_layers / sizeof bus_layers[0];
   for(int i = 0; i<busLayersSize; i++){
@@ -59,7 +52,6 @@ static void destroy_ui(void) {
       bus_layers[i] = NULL;
     }
   }
-//   free(bus_layers);
   
    accel_tap_service_unsubscribe();
 }
@@ -157,12 +149,33 @@ static void handle_window_unload(Window* window) {
    destroy_ui();
 }
 
+void stop_clear_all(void) {
+  for(int i = 0; i < NUM_BUSES_IN_LIST; i++){
+    if(buses[i]){
+      bus_destroy(buses[i]);
+      buses[i] = NULL;
+    }
+  }
+}
+
 void show_stop(const char *id) {
   strncpy(stop_id, id, sizeof(stop_id) - 1);
   stop_id[sizeof(stop_id) - 1] = '\0';
     
-  if (s_window) {
+  if (s_window && window_stack_contains_window(s_window)) {
+    int busLayersSize = sizeof bus_layers / sizeof bus_layers[0];
+    for(int i = 0; i<busLayersSize; i++){
+      if(bus_layers[i]){
+        bus_layer_destroy(bus_layers[i]);
+        bus_layers[i] = NULL;
+      }
+    }
     window_stack_remove(s_window, false);
+  }
+
+  if (s_window) {
+     window_destroy(s_window);
+     s_window = NULL;
   }
 
   initialise_ui();

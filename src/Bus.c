@@ -3,38 +3,39 @@
 
 Bus *bus_create(const char *route, const char *destination, int dueIn)
 {
-    Bus *bus = malloc(sizeof(Bus));
-    if (!bus) return NULL;
-    
-    int route_size = strlen(route) + 1;    
-    bus->route = malloc(sizeof(char) * route_size);
-    if (!bus->route) { free(bus); return NULL; }
-    strncpy(bus->route, route, route_size);
-    
-    int destination_size = strlen(destination) + 1;
-    bus->destination = malloc(sizeof(char) * destination_size);
-    if (!bus->destination) { free(bus->route); free(bus); return NULL; }
-    strncpy(bus->destination, destination, destination_size);
+    if (!route || !destination) return NULL;
 
-    int dueIn_size = 8;
-    bus->dueIn = malloc(sizeof(char) * dueIn_size);
-    if (!bus->dueIn) { free(bus->destination); free(bus->route); free(bus); return NULL; }
-    snprintf(bus->dueIn, dueIn_size, "%d", dueIn);
+    char dueIn_str[16];
+    snprintf(dueIn_str, sizeof(dueIn_str), "%d", dueIn);
+
+    int route_len = strlen(route);
+    int dest_len = strlen(destination);
+    int due_len = strlen(dueIn_str);
+
+    // Single allocation for the struct and all its strings
+    int total_size = sizeof(Bus) + route_len + dest_len + due_len + 3;
+    Bus *bus = malloc(total_size);
+    if (!bus) return NULL;
+
+    char *ptr = (char *)(bus + 1);
+
+    bus->route = ptr;
+    strcpy(bus->route, route);
+    ptr += route_len + 1;
+
+    bus->destination = ptr;
+    strcpy(bus->destination, destination);
+    ptr += dest_len + 1;
+
+    bus->dueIn = ptr;
+    strcpy(bus->dueIn, dueIn_str);
 
     return bus;
 }
 
 void bus_destroy(Bus *bus)
 {
-    if(bus == NULL){
-      return ;
+    if (bus) {
+        free(bus);
     }
-    
-    if (bus->route) free(bus->route);
-    bus->route = NULL;
-    if (bus->dueIn) free(bus->dueIn);
-    bus->dueIn = NULL;
-    if (bus->destination) free(bus->destination);
-    bus->destination = NULL;
-    free(bus);
 }
