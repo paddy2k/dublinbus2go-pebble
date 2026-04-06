@@ -18,18 +18,25 @@ static void click_config_provider(void *context) {
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
-  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
+  GColor textColour = GColorWhite;
   
   s_saved_window = window_create();
   window_set_background_color(s_saved_window, backgroundColour);
   
   s_res_saved_large = gbitmap_create_with_resource(RESOURCE_ID_SAVED_LARGE);
+  if (!s_res_saved_large) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load saved large PNG");
+  }
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(39, 30, 66, 66));
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_saved_large);
-  layer_add_child(window_get_root_layer(s_saved_window), (Layer *)s_bitmaplayer_1);
+  if (s_bitmaplayer_1) {
+    if (s_res_saved_large) {
+      bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_saved_large);
+    }
+    layer_add_child(window_get_root_layer(s_saved_window), (Layer *)s_bitmaplayer_1);
+  }
   
   // s_textlayer_1
   s_textlayer_1 = text_layer_create(GRect(0, 99, 144, 49));
@@ -45,11 +52,14 @@ static void initialise_ui(void) {
 }
 
 static void destroy_ui(void) {
-  window_destroy(s_saved_window);
+  if (s_textlayer_1) text_layer_destroy(s_textlayer_1);
+  s_textlayer_1 = NULL;
+  if (s_bitmaplayer_1) bitmap_layer_destroy(s_bitmaplayer_1);
+  s_bitmaplayer_1 = NULL;
+  if (s_res_saved_large) gbitmap_destroy(s_res_saved_large);
+  s_res_saved_large = NULL;
+  if (s_saved_window) window_destroy(s_saved_window);
   s_saved_window = NULL;
-  bitmap_layer_destroy(s_bitmaplayer_1);
-  text_layer_destroy(s_textlayer_1);
-  gbitmap_destroy(s_res_saved_large);
 }
 // END AUTO-GENERATED UI CODE
 

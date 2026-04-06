@@ -430,7 +430,7 @@ db2go.decodeStops = function (payload) {
 
 db2go.parseStopAndroid = function (departures, stopId) {
   console.log("parseStopAndroid", departures.length);
-  var maxResponse = 20;
+  var maxResponse = 12;
   // var response = xml.getElementsByTagName("DocumentElement")[0];
   var message = {
     action: actions.getStop,
@@ -455,9 +455,12 @@ db2go.parseStopAndroid = function (departures, stopId) {
     // var route, destination, now, expected, dueIn;
     // var stop = departures[i];
     console.log(departures[i]);
-    var route = departures[i].route_name;
-    var destination = departures[i].destination;
+    var route = departures[i].route_name || "";
+    var destination = departures[i].destination || "";
     var dueIn = parseInt(departures[i].due_in);
+    if (isNaN(dueIn)) {
+      dueIn = 0;
+    }
 
     // Don't send negative values
     if (dueIn < 0) {

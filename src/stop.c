@@ -26,25 +26,9 @@ char stop_name[64];
 int stoplist_type = 0;
 
 static void destroy_ui(void) {
-  window_destroy(s_window);
-  s_window = NULL;
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "stop destroy_ui: start, heap_free=%zu", heap_bytes_free());
+  accel_tap_service_unsubscribe();
 
-  text_layer_destroy(s_headerlayer_1);
-  s_headerlayer_1 = NULL;
-  text_layer_destroy(s_headerlayer_2);
-  s_headerlayer_2 = NULL;
-  scroll_layer_destroy(s_scroll_layer);
-  s_scroll_layer = NULL;
-  s_res_gothic_18 = NULL;
-  s_res_gothic_18_bold = NULL;
-  
-  #ifdef PBL_SDK_3
-  if (s_status_bar) {
-    status_bar_layer_destroy(s_status_bar);
-    s_status_bar = NULL;
-  }
-  #endif
-  
   int busLayersSize = sizeof bus_layers / sizeof bus_layers[0];
   for(int i = 0; i<busLayersSize; i++){
     if(bus_layers[i]){
@@ -52,24 +36,51 @@ static void destroy_ui(void) {
       bus_layers[i] = NULL;
     }
   }
-  
-   accel_tap_service_unsubscribe();
+
+  #ifdef PBL_SDK_3
+  if (s_status_bar) {
+    status_bar_layer_destroy(s_status_bar);
+    s_status_bar = NULL;
+  }
+  #endif
+
+  if (s_scroll_layer) {
+    scroll_layer_destroy(s_scroll_layer);
+    s_scroll_layer = NULL;
+  }
+  if (s_headerlayer_2) {
+    text_layer_destroy(s_headerlayer_2);
+    s_headerlayer_2 = NULL;
+  }
+  if (s_headerlayer_1) {
+    text_layer_destroy(s_headerlayer_1);
+    s_headerlayer_1 = NULL;
+  }
+  s_res_gothic_18 = NULL;
+  s_res_gothic_18_bold = NULL;
+
+  if (s_window) {
+    window_destroy(s_window);
+    s_window = NULL;
+  }
 }
 
 void tap_handler(AccelAxisType axis, int32_t direction)
 {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "tap_handler: fired");
   show_loading();
   hide_stop();
   getStop(stop_id);
 }
 
 static void initialise_ui() {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "stop init_ui: start, heap_free=%zu", heap_bytes_free());
   s_window = window_create();
   if (!s_window) return;
 
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
   window_set_background_color(s_window, backgroundColour);
-  
+
   GRect bounds = GRect(0, 24, 144, 130);
   #ifdef PBL_SDK_3
   bounds = GRect(0, 40, 144, 130);
@@ -78,11 +89,11 @@ static void initialise_ui() {
   s_scroll_layer = scroll_layer_create(bounds);
   if (!s_scroll_layer) return;
   scroll_layer_set_click_config_onto_window(s_scroll_layer, s_window);
-  
+
   s_res_gothic_18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
   s_res_gothic_18_bold = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
-  
-  
+
+
   // s_headerlayer_1
   GRect headerSize = GRect(0, 0, 144, 24);
   #ifdef PBL_SDK_3
@@ -91,12 +102,12 @@ static void initialise_ui() {
   s_headerlayer_1 = text_layer_create(headerSize);
   if (s_headerlayer_1) {
     text_layer_set_text(s_headerlayer_1, "                                       Due");
-    text_layer_set_background_color(s_headerlayer_1, GColorBlack);
+    text_layer_set_background_color(s_headerlayer_1, GColorFromHEX(0x00A572));
     text_layer_set_font(s_headerlayer_1, s_res_gothic_18);
     text_layer_set_text_color(s_headerlayer_1, GColorWhite);
     layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_1);
   }
-  
+
   // s_headerlayer_2
   GRect headerSizeTwo = GRect(2, 0, 100, 24);
   #ifdef PBL_SDK_3
@@ -110,16 +121,19 @@ static void initialise_ui() {
     text_layer_set_font(s_headerlayer_2, s_res_gothic_18_bold);
     layer_add_child(window_get_root_layer(s_window), (Layer *)s_headerlayer_2);
   }
-  
+
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "stop init_ui: headers done");
+
   int rows = 0;
+  int maxRows = 5;
   int busesSize = sizeof buses / sizeof buses[0];
   for(int i = 0; i< busesSize; i++){
     if (bus_layers[i]) {
       bus_layer_destroy(bus_layers[i]);
       bus_layers[i] = NULL;
     }
-    if(buses[i]){
-      bus_layers[i] = bus_layer_create(GRect(0, (24 * i), 0, 0));
+    if(buses[i] && rows < maxRows){
+      bus_layers[i] = bus_layer_create(GRect(0, (24 * rows), 0, 0));
       if (bus_layers[i]) {
         bus_layer_set_bus(bus_layers[i], buses[i]);
         scroll_layer_add_child(s_scroll_layer, bus_layer_get_layer(bus_layers[i]));
@@ -127,20 +141,23 @@ static void initialise_ui() {
       }
     }
   }
-  
+
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "stop init_ui: %d bus rows", rows);
+
   scroll_layer_set_content_size(s_scroll_layer, GSize(bounds.size.w, (24*rows)));
   layer_add_child(window_get_root_layer(s_window), scroll_layer_get_layer(s_scroll_layer));
-  
+
   #ifdef PBL_SDK_3
   // Set up the status bar last to ensure it is on top of other Layers
-  s_status_bar = status_bar_layer_create();  
+  s_status_bar = status_bar_layer_create();
   if (s_status_bar) {
-    status_bar_layer_set_colors(s_status_bar, GColorBlack, GColorWhite);
+    status_bar_layer_set_colors(s_status_bar, GColorFromHEX(0x00A572), GColorWhite);
     layer_add_child(window_get_root_layer(s_window), status_bar_layer_get_layer(s_status_bar));
   }
   #endif
-    
+
   accel_tap_service_subscribe(tap_handler);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "stop init_ui: done, heap_free=%zu", heap_bytes_free());
 }
 
 // END AUTO-GENERATED UI CODE
@@ -159,9 +176,10 @@ void stop_clear_all(void) {
 }
 
 void show_stop(const char *id) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "show_stop: start id=%s", id);
   strncpy(stop_id, id, sizeof(stop_id) - 1);
   stop_id[sizeof(stop_id) - 1] = '\0';
-    
+
   if (s_window && window_stack_contains_window(s_window)) {
     int busLayersSize = sizeof bus_layers / sizeof bus_layers[0];
     for(int i = 0; i<busLayersSize; i++){
@@ -183,7 +201,9 @@ void show_stop(const char *id) {
     window_set_window_handlers(s_window, (WindowHandlers) {
       .unload = handle_window_unload,
     });
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "show_stop: about to push window, heap_free=%zu", heap_bytes_free());
     window_stack_push(s_window, true);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "show_stop: window pushed");
   }
 }
 

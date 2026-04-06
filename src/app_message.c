@@ -171,12 +171,12 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
               int routeId = 1000+i;
               int destinationId = 1100+i;
               int dueinId = 1200+i;
-              
+
               Tuple *bus_route = dict_find(received, routeId);
               if(bus_route && bus_route->type == TUPLE_CSTRING){
                 Tuple *bus_destination = dict_find(received, destinationId);
                 Tuple *bus_duein = dict_find(received, dueinId);
-                
+
                 if (bus_destination && bus_destination->type == TUPLE_CSTRING && bus_duein) {
                    int dueIn = 0;
                    if (bus_duein->type == TUPLE_CSTRING) {
@@ -186,13 +186,21 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
                    }
 
                    stop_add_bus(
-                     i, 
-                     bus_route->value->cstring, 
+                     i,
+                     bus_route->value->cstring,
                      bus_destination->value->cstring,
                      dueIn
                    );
+                } else {
+                   APP_LOG(APP_LOG_LEVEL_DEBUG, "GETSTOP: skip bus %d: dest=%s(%d) duein=%s",
+                     i,
+                     bus_destination ? "found" : "NULL",
+                     bus_destination ? (int)bus_destination->type : -1,
+                     bus_duein ? "found" : "NULL");
                 }
-              }  
+              } else if (bus_route) {
+                APP_LOG(APP_LOG_LEVEL_DEBUG, "GETSTOP: route %d type=%d (not CSTRING)", i, (int)bus_route->type);
+              }
             }
           
             char stopIdStr[16];
@@ -204,7 +212,9 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
             stopIdStr[sizeof(stopIdStr)-1] = '\0';
             
             show_stop(stopIdStr);
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "GETSTOP: hide_loading");
             hide_loading();
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "GETSTOP: handler done");
             break;
         }
         break;

@@ -18,14 +18,17 @@ static void click_config_provider(void *context) {
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
-  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
+  GColor textColour = GColorWhite;
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
   
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);
   s_res_removed_large = gbitmap_create_with_resource(RESOURCE_ID_REMOVED_LARGE);
+  if (!s_res_removed_large) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load removed large PNG");
+  }
   // s_textlayer_1
   s_textlayer_1 = text_layer_create(GRect(0, 99, 144, 49));
   text_layer_set_background_color(s_textlayer_1, GColorClear);
@@ -37,19 +40,26 @@ static void initialise_ui(void) {
   
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(39, 30, 66, 66));
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_removed_large);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  if (s_bitmaplayer_1) {
+    if (s_res_removed_large) {
+      bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_removed_large);
+    }
+    layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  }
   
   // Register click handler
   window_set_click_config_provider(s_window, click_config_provider);
 }
 
 static void destroy_ui(void) {
-  window_destroy(s_window);
+  if (s_bitmaplayer_1) bitmap_layer_destroy(s_bitmaplayer_1);
+  s_bitmaplayer_1 = NULL;
+  if (s_textlayer_1) text_layer_destroy(s_textlayer_1);
+  s_textlayer_1 = NULL;
+  if (s_res_removed_large) gbitmap_destroy(s_res_removed_large);
+  s_res_removed_large = NULL;
+  if (s_window) window_destroy(s_window);
   s_window = NULL;
-  text_layer_destroy(s_textlayer_1);
-  bitmap_layer_destroy(s_bitmaplayer_1);
-  gbitmap_destroy(s_res_removed_large);
 }
 // END AUTO-GENERATED UI CODE
 

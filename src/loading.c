@@ -1,25 +1,13 @@
 #include "loading.h"
+#include "home.h"
 #include <pebble.h>
 
 // BEGIN AUTO-GENERATED UI CODE; DO NOT MODIFY
 static Window *s_window;
-static GBitmap *s_res_dublin_bus_logo;
 static BitmapLayer *s_bitmaplayer_1;
 static TextLayer *s_textlayer_2;
 static TextLayer *s_textlayer_1;
 static AppTimer *timer;
-
-enum {
-  ACTION_KEY = 0,	
-  STATUS_KEY = 1,	
-	DATA_KEY = 2
-};
-
-enum {
-  GET_SAVED_STOPS_ACTION = 0,	
-  GET_NEAREST_STOPS_ACTION = 1,	
-  GET_STOP_ACTION = 2
-};
 
 void tick_handler(void *data){
   if (!s_window || !window_stack_contains_window(s_window)) {
@@ -39,32 +27,33 @@ void tick_handler(void *data){
       }
     }
   }
-               
+
   timer = app_timer_register(1000, tick_handler, NULL);
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
-  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
+  GColor textColour = GColorWhite;
   GFont s_res_gothic_24 = fonts_get_system_font(FONT_KEY_GOTHIC_24);
-  
+
   s_window = window_create();
   if (!s_window) return;
   window_set_background_color(s_window, backgroundColour);
-  
-  s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
 
-  // s_bitmaplayer_1
+  // s_bitmaplayer_1 - shares logo bitmap from home screen (not a separate copy)
   GRect imageSize = GRect(4, 13, 136, 40);
   #ifdef PBL_SDK_3
   imageSize = GRect(4, 22, 136, 40);
   #endif
   s_bitmaplayer_1 = bitmap_layer_create(imageSize);
   if (s_bitmaplayer_1) {
-    bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
+    GBitmap *logo = get_app_logo();
+    if (logo) {
+      bitmap_layer_set_bitmap(s_bitmaplayer_1, logo);
+    }
     layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
   }
-  
+
   // s_textlayer_2
   s_textlayer_2 = text_layer_create(GRect(37, 85, 100, 32));
   if (s_textlayer_2) {
@@ -74,7 +63,7 @@ static void initialise_ui(void) {
     text_layer_set_font(s_textlayer_2, s_res_gothic_24);
     layer_add_child(window_get_root_layer(s_window), (Layer *)s_textlayer_2);
   }
-  
+
   // s_textlayer_1
   s_textlayer_1 = text_layer_create(GRect(90, 85, 14, 24));
   if (s_textlayer_1) {
@@ -84,7 +73,7 @@ static void initialise_ui(void) {
     text_layer_set_font(s_textlayer_1, s_res_gothic_24);
     layer_add_child(window_get_root_layer(s_window), (Layer *)s_textlayer_1);
   }
-  
+
   timer = app_timer_register(1000, tick_handler, NULL);
 }
 
@@ -94,11 +83,14 @@ static void destroy_ui(void) {
     timer = NULL;
   }
 
+  // Destroy the bitmap layer but NOT the bitmap itself - it belongs to home.c
   if (s_bitmaplayer_1) bitmap_layer_destroy(s_bitmaplayer_1);
+  s_bitmaplayer_1 = NULL;
   if (s_textlayer_2) text_layer_destroy(s_textlayer_2);
+  s_textlayer_2 = NULL;
   if (s_textlayer_1) text_layer_destroy(s_textlayer_1);
-  if (s_res_dublin_bus_logo) gbitmap_destroy(s_res_dublin_bus_logo);
-  
+  s_textlayer_1 = NULL;
+
   if (s_window) {
     window_destroy(s_window);
     s_window = NULL;
@@ -122,6 +114,7 @@ void remove_loading_window(void){
 
 void show_loading(void) {
   initialise_ui();
+  if (!s_window) return;
   window_set_window_handlers(s_window, (WindowHandlers) {
     .unload = handle_window_unload,
   });

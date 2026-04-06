@@ -13,6 +13,16 @@ static GBitmap *s_res_dublin_bus_logo;
 static GBitmap *s_menu_icons[NUM_MENU_ITEMS];
 static BitmapLayer *s_bitmaplayer_1;
 static MenuLayer *s_menulayer_1;
+static Layer *s_circle_layer;
+
+static void canvas_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+  GPoint center = GPoint(bounds.size.w / 2, bounds.size.h / 2);
+  uint16_t radius = bounds.size.h / 2;
+
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_circle(ctx, center, radius);
+}
 
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
   return NUM_MENU_SECTIONS;
@@ -91,8 +101,8 @@ void on_animation_stopped(Animation *anim, bool finished, void *context)
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
 
   #ifdef PBL_COLOR
-  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00B173), GColorBlack);
-  menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
+  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00A572), GColorWhite);
+  menu_layer_set_highlight_colors(s_menulayer_1, GColorWhite, GColorFromHEX(0x00A572));
   #endif
 
   layer_add_child(window_get_root_layer(s_window), (Layer *)s_menulayer_1);
@@ -122,41 +132,94 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
 }
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
 
   s_menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_FAVOURITES_ICON_BLACK);
+  if (!s_menu_icons[0]) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load favourites icon PNG");
+  }
   s_menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
+  if (!s_menu_icons[1]) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load nearest icon PNG");
+  }
   s_menu_icons[2] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
+  if (!s_menu_icons[2]) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load nearest icon PNG");
+  }
   s_menu_icons[3] = gbitmap_create_with_resource(RESOURCE_ID_NEAREST_ICON_BLACK);
+  if (!s_menu_icons[3]) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load nearest icon PNG");
+  }
 
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
 
   s_res_dublin_bus_logo = gbitmap_create_with_resource(RESOURCE_ID_DUBLIN_BUS_LOGO);
+  if (!s_res_dublin_bus_logo) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load Dublin Bus logo PNG in home");
+  }
+
+  // s_circle_layer
+  #ifdef PBL_SDK_3
+  GRect circle_bounds = GRect(47, 57, 50, 50);
+  #else
+  GRect circle_bounds = GRect(47, 45, 50, 50);
+  #endif
+  s_circle_layer = layer_create(circle_bounds);
+  layer_set_update_proc(s_circle_layer, canvas_update_proc);
+  layer_add_child(window_get_root_layer(s_window), s_circle_layer);
 
   // s_bitmaplayer_1
-  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 50, 136, 40));
   #ifdef PBL_SDK_3
   s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 62, 136, 40));
+  #else
+  s_bitmaplayer_1 = bitmap_layer_create(GRect(4, 50, 136, 40));
   #endif
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  if (s_bitmaplayer_1) {
+    if (s_res_dublin_bus_logo) {
+      bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_dublin_bus_logo);
+      bitmap_layer_set_compositing_mode(s_bitmaplayer_1, GCompOpSet);
+    }
+    layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  }
 }
 
 static void destroy_ui(void) {
-  window_destroy(s_window);
-  bitmap_layer_destroy(s_bitmaplayer_1);
-  menu_layer_destroy(s_menulayer_1);
-  gbitmap_destroy(s_res_dublin_bus_logo);
-
+  if (s_menulayer_1) {
+    menu_layer_destroy(s_menulayer_1);
+    s_menulayer_1 = NULL;
+  }
+  if (s_bitmaplayer_1) {
+    bitmap_layer_destroy(s_bitmaplayer_1);
+    s_bitmaplayer_1 = NULL;
+  }
+  if (s_circle_layer) {
+    layer_destroy(s_circle_layer);
+    s_circle_layer = NULL;
+  }
+  if (s_res_dublin_bus_logo) {
+    gbitmap_destroy(s_res_dublin_bus_logo);
+    s_res_dublin_bus_logo = NULL;
+  }
   for ( int i=0; i<NUM_MENU_ITEMS; i++ ) {
-    gbitmap_destroy( s_menu_icons[i] );
+    if (s_menu_icons[i]) {
+      gbitmap_destroy( s_menu_icons[i] );
+      s_menu_icons[i] = NULL;
+    }
+  }
+  if (s_window) {
+    window_destroy(s_window);
+    s_window = NULL;
   }
 }
 // END AUTO-GENERATED UI CODE
 
 static void handle_window_unload(Window* window) {
   destroy_ui();
+}
+
+GBitmap *get_app_logo(void) {
+  return s_res_dublin_bus_logo;
 }
 
 void show_home(void) {
@@ -174,11 +237,16 @@ void hide_home(void) {
 void show_ui(void){
   GRect start = GRect(4, 50, 136, 40);
   GRect finish = GRect(4, 13, 136, 40);
+  GRect c_start = GRect(47, 45, 50, 50);
+  GRect c_finish = GRect(47, 8, 50, 50);
   #ifdef PBL_SDK_3
   start = GRect(4, 60, 136, 40);
   finish = GRect(4, 22, 136, 40);
+  c_start = GRect(47, 57, 50, 50);
+  c_finish = GRect(47, 19, 50, 50);
   #endif
 
 
   animate_layer(bitmap_layer_get_layer(s_bitmaplayer_1), &start, &finish, 300, 0);
+  animate_layer(s_circle_layer, &c_start, &c_finish, 300, 0);
 }

@@ -8,14 +8,12 @@
 #include <pebble.h>
 
 #define NUM_MENU_SECTIONS 1
-#define NUM_MENU_ITEMS 5
 #define NUM_STOPS_IN_LIST 20
 
 static Window *s_window;
 static MenuLayer *s_menulayer_1;
 
 int stop_list_type = 0;
-int stop_list[NUM_STOPS_IN_LIST];
 
 static Stop *stops[NUM_STOPS_IN_LIST] = {};
 
@@ -40,10 +38,19 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 }
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-  graphics_context_set_text_color(ctx, GColorBlack); // This is important.
+  graphics_context_set_text_color(ctx, COLOR_FALLBACK(GColorWhite, GColorBlack));
   switch(stop_list_type){
     case 0:
       menu_cell_basic_header_draw(ctx, cell_layer, "Saved Stops");
+      break;
+    case 1:
+      menu_cell_basic_header_draw(ctx, cell_layer, "Nearest Bus");
+      break;
+    case 2:
+      menu_cell_basic_header_draw(ctx, cell_layer, "Nearest Train");
+      break;
+    case 3:
+      menu_cell_basic_header_draw(ctx, cell_layer, "Nearest Luas");
       break;
     default:
       menu_cell_basic_header_draw(ctx, cell_layer, "Nearest Stops");
@@ -95,8 +102,13 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
         break;
     }
 
-    char bottom[256];
-    snprintf(bottom, sizeof bottom, "#%s%s%s %s", stop->id + strlen(stop->id) - 4, buffer, stop->distance, stop->bearing);
+    char bottom[64];
+    const char *display_id = stop->id;
+    int id_len = strlen(stop->id);
+    if (id_len > 4) {
+      display_id = stop->id + id_len - 4;
+    }
+    snprintf(bottom, sizeof bottom, "#%s%s%s %s", display_id, buffer, stop->distance, stop->bearing);
 
     menu_cell_basic_draw(ctx, cell_layer, stop->name, bottom, NULL);
   }
@@ -129,7 +141,7 @@ static void menu_select_long_callback(MenuLayer *menu_layer, MenuIndex *cell_ind
 
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
 
   s_window = window_create();
   if (!s_window) return;
@@ -153,9 +165,9 @@ static void initialise_ui(void) {
     .select_long_click = menu_select_long_callback,
   });
 
-  #ifdef PBL_SDK_3
-  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00B173), GColorBlack);
-  menu_layer_set_highlight_colors(s_menulayer_1, GColorBlack, GColorWhite);
+  #ifdef PBL_COLOR
+  menu_layer_set_normal_colors(s_menulayer_1, GColorFromHEX(0x00A572), GColorWhite);
+  menu_layer_set_highlight_colors(s_menulayer_1, GColorWhite, GColorFromHEX(0x00A572));
   #endif
 
   menu_layer_set_click_config_onto_window(s_menulayer_1, s_window);
@@ -164,11 +176,15 @@ static void initialise_ui(void) {
   stoplist_type = stop_list_type;
 }
 
-static void destroy_ui(void) {  
-  window_destroy(s_window);
-  s_window = NULL;
-  menu_layer_destroy(s_menulayer_1);
-  s_menulayer_1 = NULL;
+static void destroy_ui(void) {
+  if (s_menulayer_1) {
+    menu_layer_destroy(s_menulayer_1);
+    s_menulayer_1 = NULL;
+  }
+  if (s_window) {
+    window_destroy(s_window);
+    s_window = NULL;
+  }
 }
 // END AUTO-GENERATED UI CODE
 

@@ -72,22 +72,22 @@ BusLayer *bus_layer_create(GRect frame)
 
     text_layer_set_text_color(
         bus_layer->route_text_layer,
-        GColorBlack
+        GColorWhite
     );
 
     text_layer_set_text_color(
         bus_layer->destination_text_layer,
-        GColorBlack
+        GColorWhite
     );
 
     text_layer_set_text_color(
         bus_layer->due_text_layer,
-        GColorBlack
+        GColorWhite
     );
 
     text_layer_set_text_color(
         bus_layer->footer_text_layer,
-        GColorBlack
+        GColorWhite
     );
 
     text_layer_set_background_color(

@@ -11,14 +11,17 @@ static TextLayer *s_textlayer_2;
 static BitmapLayer *s_bitmaplayer_1;
 
 static void initialise_ui(void) {
-  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00B173), GColorBlack);
-  GColor textColour = COLOR_FALLBACK(GColorBlack, GColorWhite);
+  GColor backgroundColour = COLOR_FALLBACK(GColorFromHEX(0x00A572), GColorBlack);
+  GColor textColour = GColorWhite;
   
   s_window = window_create();
   window_set_background_color(s_window, backgroundColour);
   
   s_res_roboto_condensed_21 = fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21);
   s_res_info_large = gbitmap_create_with_resource(RESOURCE_ID_INFO_LARGE);
+  if (!s_res_info_large) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Failed to load info large PNG");
+  }
   s_res_gothic_14 = fonts_get_system_font(FONT_KEY_GOTHIC_14);
   
   // s_textlayer_1
@@ -32,8 +35,12 @@ static void initialise_ui(void) {
   
   // s_bitmaplayer_1
   s_bitmaplayer_1 = bitmap_layer_create(GRect(39, 20, 66, 66));
-  bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_info_large);
-  layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  if (s_bitmaplayer_1) {
+    if (s_res_info_large) {
+      bitmap_layer_set_bitmap(s_bitmaplayer_1, s_res_info_large);
+    }
+    layer_add_child(window_get_root_layer(s_window), (Layer *)s_bitmaplayer_1);
+  }
   
   // s_textlayer_2
   s_textlayer_2 = text_layer_create(GRect(0, 130, 144, 20));
@@ -46,11 +53,16 @@ static void initialise_ui(void) {
 }
 
 static void destroy_ui(void) {
-  window_destroy(s_window);
-  text_layer_destroy(s_textlayer_1);
-  text_layer_destroy(s_textlayer_2);
-  bitmap_layer_destroy(s_bitmaplayer_1);
-  gbitmap_destroy(s_res_info_large);
+  if (s_textlayer_2) text_layer_destroy(s_textlayer_2);
+  s_textlayer_2 = NULL;
+  if (s_textlayer_1) text_layer_destroy(s_textlayer_1);
+  s_textlayer_1 = NULL;
+  if (s_bitmaplayer_1) bitmap_layer_destroy(s_bitmaplayer_1);
+  s_bitmaplayer_1 = NULL;
+  if (s_res_info_large) gbitmap_destroy(s_res_info_large);
+  s_res_info_large = NULL;
+  if (s_window) window_destroy(s_window);
+  s_window = NULL;
 }
 // END AUTO-GENERATED UI CODE
 
